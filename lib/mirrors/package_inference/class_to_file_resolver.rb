@@ -16,13 +16,20 @@ module Mirrors
           return nil
         end
 
-        try_fast(klass, name)                   ||
+        try_traced(name)                        ||
+          try_fast(klass, name)                 ||
           try_fast(klass.singleton_class, name) ||
           try_slow(klass)                       ||
           try_slow(klass.singleton_class)
       end
 
       private
+
+      def try_traced(class_name)
+        return false unless defined?(Mirrors::Init)
+        files = Mirrors::Init.class_files(class_name)
+        files.size == 1 ? files.first : nil
+      end
 
       def try_fast(klass, class_name)
         klass.instance_methods(false).each do |name|
