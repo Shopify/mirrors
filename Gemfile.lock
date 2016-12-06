@@ -1,0 +1,23 @@
+PATH
+  remote: .
+  specs:
+    mirrors (0.0.1)
+      method_source (~> 0.8)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    byebug (9.0.6)
+    method_source (0.8.2)
+    minitest (5.9.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  byebug (~> 9.0.6)
+  minitest (~> 5.0)
+  mirrors!
+
+BUNDLED WITH
+   1.13.6

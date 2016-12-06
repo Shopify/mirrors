@@ -1,0 +1,6 @@
+machine:
+  ruby:
+    version: ruby-2.3.1
+test:
+  override:
+    - bundle exec bin/testunit
