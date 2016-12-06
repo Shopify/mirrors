@@ -5,7 +5,7 @@ class Class
     Mirrors.reflect(method(symbol))
   end
 
-  def reflect
-    Mirrors.reflect(self)
-  end
+  # def mirror
+  #   Mirrors.reflect(self)
+  # end
 end

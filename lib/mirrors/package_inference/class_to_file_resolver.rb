@@ -1,3 +1,5 @@
+require 'mirrors/invoke'
+
 module Mirrors
   module PackageInference
     class ClassToFileResolver
@@ -7,9 +9,18 @@ module Mirrors
 
       def resolve(klass)
         return nil if klass.nil?
-        try_fast(klass, klass.name)                   ||
-          try_fast(klass.singleton_class, klass.name) ||
-          try_slow(klass)                             ||
+
+        name = begin
+          Mirrors.module_instance_invoke(klass, :name)
+        rescue TypeError
+          # klass is not a class/module, so we can't really determine its
+          # origin.
+          return nil
+        end
+
+        try_fast(klass, name)                   ||
+          try_fast(klass.singleton_class, name) ||
+          try_slow(klass)                       ||
           try_slow(klass.singleton_class)
       end
 
@@ -46,6 +57,9 @@ module Mirrors
             begin
               meth.source =~ /\A\s+def (self\.)?#{Regexp.quote(meth.name)}/
             rescue MethodSource::SourceNotFoundError
+              false
+            rescue NoMethodError => e
+              STDERR.puts "\x1b[31mbug in method_source for #{meth}: #{e.inspect}\x1b[0m"
               false
             end
           end

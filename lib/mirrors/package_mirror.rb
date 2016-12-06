@@ -3,6 +3,10 @@ require 'mirrors/package_inference'
 
 module Mirrors
   class PackageMirror < Mirror
+    def self.reflect(name)
+      new(name)
+    end
+
     def name
       @subject.sub(/.*:/, '')
     end

@@ -17,6 +17,18 @@ module Mirrors
   @watches = {}
   @logger = Logger.new(STDOUT)
 
+  ProjectRootNotFound = Class.new(StandardError)
+
+  def project_root
+    if defined?(Bundler)
+      return File.expand_path(Bundler.root)
+    end
+    if Dir.exist?('.git')
+      return File.expand_path(Dir.pwd)
+    end
+    raise ProjectRootNotFound
+  end
+
   def packages
     packages = {}
     # Object is the top-level.
@@ -120,12 +132,12 @@ module Mirrors
 
   # find the class of obj
   def basic_class(obj)
-    Kernel.instance_method(:class).bind(obj).call
+    Mirrors.kernel_instance_invoke(obj, :class)
   end
 
   # find the class name of obj
   def basic_class_name(klass)
-    Class.instance_method(:name).bind(klass).call
+    Mirrors.module_instance_invoke(obj, :name)
   end
 
   def intern_class_mirror(mirror)

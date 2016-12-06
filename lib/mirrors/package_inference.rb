@@ -1,8 +1,8 @@
 require 'rbconfig'
 require 'set'
 
-require 'mirrors/hook'
 require 'mirrors/package_inference/class_to_file_resolver'
+require 'mirrors/invoke'
 
 module Mirrors
   module PackageInference
@@ -121,9 +121,6 @@ module Mirrors
     end
 
     def determine_filename(key, resolver)
-      if fn = CLASS_DEFINITION_POINTS[key]
-        return fn
-      end
       resolver.resolve(Object.const_get(key))
     end
 
