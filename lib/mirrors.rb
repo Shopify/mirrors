@@ -30,6 +30,14 @@ module Mirrors
     raise ProjectRootNotFound
   end
 
+  @unbound_methods = {}
+
+  def rebind(owner, receiver, msg)
+    @unbound_methods[owner] ||= {}
+    meth = (@unbound_methods[owner][msg] ||= owner.instance_method(msg))
+    meth.bind(receiver)
+  end
+
   def packages
     packages = {}
     # Object is the top-level.
@@ -133,12 +141,12 @@ module Mirrors
 
   # find the class of obj
   def basic_class(obj)
-    Mirrors.kernel_instance_invoke(obj, :class)
+    Mirrors.rebind(Kernel, obj, :class).call
   end
 
   # find the class name of obj
   def basic_class_name(klass)
-    Mirrors.module_instance_invoke(obj, :name)
+    Mirrors.rebind(Module, obj, :name).call
   end
 
   def intern_class_mirror(mirror)

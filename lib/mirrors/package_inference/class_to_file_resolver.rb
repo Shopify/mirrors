@@ -1,5 +1,3 @@
-require 'mirrors/invoke'
-
 module Mirrors
   module PackageInference
     class ClassToFileResolver
@@ -11,7 +9,7 @@ module Mirrors
         return nil if klass.nil?
 
         name = begin
-          Mirrors.module_instance_invoke(klass, :name)
+          Mirrors.rebind(Module, klass, :name).call
         rescue TypeError
           # klass is not a class/module, so we can't really determine its
           # origin.

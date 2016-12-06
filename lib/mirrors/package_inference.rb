@@ -2,14 +2,14 @@ require 'rbconfig'
 require 'set'
 
 require 'mirrors/package_inference/class_to_file_resolver'
-require 'mirrors/invoke'
 
 module Mirrors
   module PackageInference
     extend self
 
     def infer_from(mod, resolver = ClassToFileResolver.new)
-      infer_from_key(Mirrors.module_instance_invoke(mod, :inspect), resolver)
+      insp = Mirrors.rebind(Module, mod, :inspect).call
+      infer_from_key(insp, resolver)
     end
 
     def infer_from_toplevel(sym, resolver = ClassToFileResolver.new)
@@ -135,7 +135,8 @@ module Mirrors
 
         next if exclusions.include?(child)
 
-        pkg = uncached_infer_from(Mirrors.module_instance_invoke(child, :inspect), exclusions, resolver)
+        insp = Mirrors.rebind(Module, child, :inspect).call
+        pkg = uncached_infer_from(insp, exclusions, resolver)
         return pkg unless pkg == 'unknown'
       end
 

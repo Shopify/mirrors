@@ -173,7 +173,7 @@ module Mirrors
     end
 
     def name
-      Mirrors.module_instance_invoke(@subject, :inspect)
+      Mirrors.rebind(Module, @subject, :inspect).call
     end
 
     def demodulized_name
