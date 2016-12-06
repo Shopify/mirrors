@@ -58,10 +58,10 @@ module Mirrors
           @label = bc
           next # labels are not executable
         elsif bc.class == Array
-          @opcode = VM::InstructionSequence::Instruction.id2insn_no(bc.first)
+          @opcode = Mirrors::YASMData.id2insn_no(bc.first)
           unrecognized_bytecode(bc) unless @opcode
           visit(bc)
-          @pc += VM::InstructionSequence::Instruction.insn_no2size(@opcode)
+          @pc += Mirrors::YASMData.insn_no2size(@opcode)
         else
           unrecognized_bytecode(bc)
         end

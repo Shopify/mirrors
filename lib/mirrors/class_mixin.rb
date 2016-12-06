@@ -1,11 +1,8 @@
-# mixin, convenience operator for method reflection
-# inspired by Smalltalk
-class Class
-  def >>(symbol)
-    Mirrors.reflect(method(symbol))
+module Mirrors
+  refine Class do
+    # convenience operator for method reflection inspired by Smalltalk
+    def >>(symbol)
+      Mirrors.reflect(method(symbol))
+    end
   end
-
-  # def mirror
-  #   Mirrors.reflect(self)
-  # end
 end
