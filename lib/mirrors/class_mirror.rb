@@ -172,14 +172,8 @@ module Mirrors
       Mirrors.reflect @subject.instance_method(name)
     end
 
-    # to work around overridden `name` methods
-    MODULE_INSPECT = Module.instance_method(:inspect)
     def name
-      MODULE_INSPECT.bind(@subject).call
-    rescue
-      puts @subject.inspect
-      puts @subject.class
-      raise
+      Mirrors.module_instance_invoke(@subject, :inspect)
     end
 
     def demodulized_name
