@@ -7,6 +7,7 @@ require 'mirrors/method_mirror'
 require 'mirrors/package_mirror'
 require 'mirrors/package_inference'
 require 'mirrors/class_mixin'
+require 'mirrors/iseq'
 require 'mirrors/index/indexer'
 
 module Mirrors

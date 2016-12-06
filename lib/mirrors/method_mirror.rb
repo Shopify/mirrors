@@ -2,8 +2,7 @@ require 'method_source'
 require 'base64'
 require 'ripper'
 require 'pp'
-require 'mirrors/visitors/iseq_visitor'
-require 'mirrors/visitors/references_visitor'
+require 'mirrors/iseq/references_visitor'
 
 module Mirrors
   # A MethodMirror should reflect on methods, but in a more general
@@ -160,9 +159,7 @@ module Mirrors
     end
 
     def references
-      visitor = Mirrors::ReferencesVisitor.new
-      visitor.call(self)
-      visitor.markers
+      Mirrors::ISeq.references(@subject)
     end
 
     private

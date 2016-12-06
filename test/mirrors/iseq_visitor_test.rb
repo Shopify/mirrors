@@ -1,9 +1,9 @@
 require 'test_helper'
-require 'mirrors/visitors/disasm_visitor'
+require 'mirrors/iseq/disasm_visitor'
 
 module Mirrors
   class ISeqVisitorTest < MiniTest::Test
-    class CountingVisitor < Mirrors::ISeqVisitor
+    class CountingVisitor < Mirrors::ISeq::Visitor
       attr_reader :count
       def initialize
         @count = 0
@@ -26,7 +26,7 @@ module Mirrors
       Mirrors.classes.each do |clazz|
         clazz.methods.each do |meth|
           visitor = CountingVisitor.new
-          visitor.call(meth)
+          visitor.call(meth.native_code)
           bytecode_count += visitor.count
 
           if visitor.count > largest
