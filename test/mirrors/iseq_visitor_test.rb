@@ -23,8 +23,8 @@ module Mirrors
       largest = 0
       largest_method = nil
 
-      Mirrors.classes.each do |clazz|
-        clazz.methods.each do |meth|
+      Mirrors.classes.each do |klass|
+        klass.methods.each do |meth|
           visitor = CountingVisitor.new
           visitor.call(meth.native_code)
           bytecode_count += visitor.count
