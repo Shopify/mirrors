@@ -43,7 +43,11 @@ module Mirrors
           .select do |meth|
             # as a mostly-useful heuristic, we just eliminate everything that was
             # defined using a template eval or define_method.
-            meth.source =~ /\A\s+def (self\.)?#{Regexp.quote(meth.name)}/
+            begin
+              meth.source =~ /\A\s+def (self\.)?#{Regexp.quote(meth.name)}/
+            rescue MethodSource::SourceNotFoundError
+              false
+            end
           end
 
         files = Hash.new(0)

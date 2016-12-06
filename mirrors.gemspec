@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'mirrors'
-  s.version       = '0.0.1'
+  s.version       = '0.0.2'
   s.platform      = Gem::Platform::RUBY
   s.licenses      = ['MIT']
   s.authors       = ['Burke Libbey']
@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.summary       = 'Mirror API for Ruby'
   s.description   = 'Provides a number of specs and classes that document a mirror API for Ruby.'
   s.files         = `git ls-files`.split("\n")
-  s.test_files    = `git ls-files -- spec/*`.split("\n")
+  s.test_files    = `git ls-files -- test/*`.split("\n")
   s.require_paths = ['lib']
 
   s.add_development_dependency 'minitest', '~> 5.0'
