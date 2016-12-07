@@ -5,22 +5,17 @@ module Mirrors
         @files = {}
       end
 
-      def resolve(klass)
-        return nil if klass.nil?
+      # @param [ClassMirror] cm
+      # @return [String, nil]
+      def resolve(cm)
+        name = cm.name
+        dname = cm.demodulized_name
 
-        name = begin
-          Mirrors.rebind(Module, klass, :name).call
-        rescue TypeError
-          # klass is not a class/module, so we can't really determine its
-          # origin.
-          return nil
-        end
-
-        try_traced(name)                        ||
-          try_fast(klass, name)                 ||
-          try_fast(klass.singleton_class, name) ||
-          try_slow(klass)                       ||
-          try_slow(klass.singleton_class)
+        try_traced(name)                      ||
+          try_fast(cm, dname)                 ||
+          try_fast(cm.singleton_class, dname) ||
+          try_slow(cm)                        ||
+          try_slow(cm.singleton_class)
       end
 
       private
@@ -31,53 +26,32 @@ module Mirrors
         files.size == 1 ? files.first : nil
       end
 
-      def try_fast(klass, class_name)
-        klass.instance_methods(false).each do |name|
-          meth = klass.instance_method(name)
-
-          file = begin
-            sl = meth.source_location
-            next unless sl
-            sl[0]
-          rescue MethodSource::SourceNotFoundError
-            next
-          end
+      def try_fast(cm, demodulized_name)
+        cm.methods.each do |mm|
+          file = mm.file
+          next unless file
 
           contents = (@files[file] ||= File.open(file, 'r') { |f| f.readpartial(4096) })
-          n = class_name.sub(/.*::/, '') # last component of module name
-          return file if contents =~ /^\s+(class|module) ([\S]+::)?#{Regexp.quote(n)}\s/
+          pat = /^\s+(class|module) ([\S]+::)?#{Regexp.quote(demodulized_name)}\s/
+          return file if contents =~ pat
         end
         nil
       end
 
-      def try_slow(klass)
-        methods = klass
-          .instance_methods(false)
-          .map { |n| klass.instance_method(n) }
-
-        defined_directly_on_class = methods
-          .select do |meth|
+      def try_slow(cm)
+        defined_directly_on_class = cm.methods
+          .select do |mm|
             # as a mostly-useful heuristic, we just eliminate everything that was
             # defined using a template eval or define_method.
-            begin
-              meth.source =~ /\A\s+def (self\.)?#{Regexp.quote(meth.name)}/
-            rescue MethodSource::SourceNotFoundError
-              false
-            rescue NoMethodError => e
-              STDERR.puts "\x1b[31mbug in method_source for #{meth}: #{e.inspect}\x1b[0m"
-              false
-            end
+            src = mm.source
+            src && src =~ /\A\s+def (self\.)?#{Regexp.quote(mm.name)}/
           end
 
         files = Hash.new(0)
 
-        defined_directly_on_class.each do |meth|
-          begin
-            sl = meth.source_location[0]
-            raise unless sl
-            files[sl[0]] += 1
-          rescue MethodSource::SourceNotFoundError
-            raise
+        defined_directly_on_class.each do |mm|
+          if f = mm.file
+            files[f] += 1
           end
         end
 

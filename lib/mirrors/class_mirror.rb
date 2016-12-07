@@ -22,11 +22,11 @@ module Mirrors
     #
     # @return [String, nil] the path on disk to the file, if determinable.
     def file
-      Mirrors::PackageInference::ClassToFileResolver.new.resolve(@subject)
+      Mirrors::PackageInference::ClassToFileResolver.new.resolve(self)
     end
 
     def is_class # rubocop:disable Style/PredicateName
-      subject_send_from_kernel(:is_a?, Class)
+      subject_is_a?(Class)
     end
 
     def package
@@ -67,7 +67,7 @@ module Mirrors
     #
     # @return [ClassMirror]
     def singleton_class
-      Mirrors.reflect(subject_send_from_kernel(:singleton_class))
+      Mirrors.reflect(subject_singleton_class)
     end
 
     # Predicate to determine whether the subject is a singleton class
@@ -88,7 +88,7 @@ module Mirrors
     #
     # @return [ClassMirror]
     def superclass
-      Mirrors.reflect(subject_send_from_class(:superclass))
+      Mirrors.reflect(subject_superclass)
     end
 
     # The known subclasses
@@ -197,6 +197,7 @@ module Mirrors
       Mirrors.reflect(subject_send_from_module(:instance_method, name))
     end
 
+    # +name+ itself is blank for anonymous/singleton classes
     def name
       subject_send_from_module(:inspect)
     end
@@ -211,6 +212,15 @@ module Mirrors
 
     def intern_field_mirror(mirror)
       @field_mirrors[mirror.name] ||= mirror
+    end
+
+    # This one is not defined on Module since it only applies to classes
+    def subject_superclass
+      Mirrors.rebind(Class.singleton_class, @subject, :superclass).call
+    end
+
+    def subject_send_from_module(message, *args)
+      Mirrors.rebind(Module, @subject, message).call(*args)
     end
   end
 end

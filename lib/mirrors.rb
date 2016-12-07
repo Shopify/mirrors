@@ -80,7 +80,7 @@ module Mirrors
     #
     # @return [Array<ClassMirror>] a list of class mirrors
     def classes
-      instances_of(Class).sort_by!(&:name)
+      instances_of(Class).reject!(&:singleton_class?).sort_by!(&:name)
     end
 
     # Query the system for objects that are direct instances of the given

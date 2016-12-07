@@ -121,7 +121,10 @@ module Mirrors
     end
 
     def determine_filename(key, resolver)
-      resolver.resolve(Object.const_get(key))
+      raw = Object.const_get(key)
+      return nil unless raw.is_a?(Module)
+
+      resolver.resolve(Mirrors.reflect(raw))
     end
 
     def try_harder(key, exclusions, resolver)
