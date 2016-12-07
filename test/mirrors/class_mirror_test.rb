@@ -7,6 +7,9 @@ module Mirrors
       super
     end
 
+    # We don't want the class mirror calling methods directly on @subject
+    # because classes and modules have a nasty habit of overriding useful
+    # reflection methods. We want ClassMirror to use the Mirrors.rebind API.
     def test_no_direct_send
       file = Mirrors.reflect(Mirrors::ClassMirror).file
       contents = File.read(file)
