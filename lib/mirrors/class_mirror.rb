@@ -17,6 +17,14 @@ module Mirrors
       @method_mirrors = {}
     end
 
+    # What is the primary defining file for this class/module?
+    # This is necessarily best-effort but it will be right in simple cases.
+    #
+    # @return [String, nil] the path on disk to the file, if determinable.
+    def file
+      Mirrors::PackageInference::ClassToFileResolver.new.resolve(@subject)
+    end
+
     def is_class # rubocop:disable Style/PredicateName
       subject_send_from_kernel(:is_a?, Class)
     end

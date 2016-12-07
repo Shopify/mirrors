@@ -7,6 +7,12 @@ module Mirrors
       super
     end
 
+    def test_no_direct_send
+      file = Mirrors.reflect(Mirrors::ClassMirror).file
+      contents = File.read(file)
+      refute_match(/@subject\./, contents)
+    end
+
     def test_name
       assert_equal(ClassFixture.name, @m.name)
     end
