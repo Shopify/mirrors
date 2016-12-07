@@ -97,14 +97,13 @@ module Mirrors
     def super_method
       owner = @subject.send(:owner)
 
-      if owner.is_a?(Class)
-        meth = Mirrors
-          .class_singleton_method(:allocate)
-          .bind(instance)
+      meth = if owner.is_a?(Class)
+        Mirrors
+          .rebind(Class.singleton_class, instance, :allocate)
           .super_method
           .unbind
       else
-        meth = @subject.bind(owner).super_method.unbind
+        @subject.bind(owner).super_method.unbind
       end
 
       meth ? Mirrors.reflect(meth) : nil

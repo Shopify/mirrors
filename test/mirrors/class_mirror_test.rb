@@ -61,13 +61,13 @@ module Mirrors
       assert_equal(:protected, meth.visibility)
     end
 
-    def test_singleton_methods
-      sms = @m.singleton_methods
+    def test_class_methods
+      sms = @m.class_methods
       assert_equal(%i(singleton_prot singleton_pub singleton_priv), sms.map(&:name))
     end
 
-    def test_singleton_method
-      meth = @m.singleton_method(:singleton_priv)
+    def test_class_method
+      meth = @m.class_method(:singleton_priv)
       assert_equal(:singleton_priv, meth.name)
       assert_equal(:private, meth.visibility)
     end

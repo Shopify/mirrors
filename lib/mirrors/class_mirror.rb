@@ -169,7 +169,7 @@ module Mirrors
     # The instance methods of this class.
     #
     # @return [Array<MethodMirror>]
-    def singleton_methods
+    def class_methods
       mirrors(all_instance_methods(subject_singleton_class))
     end
 
@@ -197,7 +197,7 @@ module Mirrors
     # @param [Symbol] name of the method to look up
     # @return [MethodMirror, nil] the method or nil, if none was found
     # @raise [NameError] if the module isn't present
-    def singleton_method(name)
+    def class_method(name)
       m = Mirrors.rebind(Module, subject_singleton_class, :instance_method).call(name)
       Mirrors.reflect(m)
     end
