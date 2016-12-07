@@ -67,14 +67,14 @@ module Mirrors
 
   # Query the system for objects that are direct instances of the
   # given class.
-  # @param [Class]
+  # @param [Class] klass
   # @return [Array<ObjectMirror>] a list of appropriate mirrors for the requested objects
   def instances_of(klass)
     mirrors(ObjectSpace.each_object(klass).select { |obj| obj.class == klass })
   end
 
   # Ask the system to find the object with the given object id
-  # @param [Numeric] object id
+  # @param [Numeric] id object ID
   # @return [ObjectMirror, NilClass] the object mirror or nil
   def object_by_id(id)
     obj = ObjectSpace._id2ref(id)
@@ -82,7 +82,7 @@ module Mirrors
   end
 
   # Query the system for implementors of a particular message
-  # @param [String] the message name
+  # @param [String] str the message name
   # @return [Array<MethodMirror>] the implementing methods
   def implementations_of(str)
     methods = ObjectSpace.each_object(Module).collect do |m|
@@ -109,7 +109,7 @@ module Mirrors
   # observation.  This is *the* factory method for all mirror
   # instances, interning and cache invalidation will be added here.
   #
-  # @param [Object]
+  # @param [Object] obj
   # @return [Mirror]
   def reflect(obj)
     klass = basic_class(obj)
