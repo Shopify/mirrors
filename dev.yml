@@ -5,4 +5,4 @@ commands:
   test:    bundle exec bin/testunit
   console: bundle exec irb -r mirrors
   doc:     bundle exec yard doc
-  style:   rubocop -D .
+  style:   bundle exec rubocop -D .
