@@ -47,10 +47,10 @@ module Mirrors
       assert(method_count >= 4782)
       assert(bytecode_count >= 47308)
 
-      puts "Walked #{class_count} classes with #{method_count} methods and #{bytecode_count} bytecodes."
-      puts "Largest method #{largest_method.defining_class.name}.#{largest_method.name}, #{largest} bytecodes."
-      puts "Smallest method #{smallest_method.defining_class.name}.#{smallest_method.name}, #{smallest} bytecodes."
-      puts "Average method #{bytecode_count / method_count}  bytecodes."
+      # puts "Walked #{class_count} classes with #{method_count} methods and #{bytecode_count} bytecodes."
+      # puts "Largest method #{largest_method.defining_class.name}.#{largest_method.name}, #{largest} bytecodes."
+      # puts "Smallest method #{smallest_method.defining_class.name}.#{smallest_method.name}, #{smallest} bytecodes."
+      # puts "Average method #{bytecode_count / method_count}  bytecodes."
     end
   end
 end
