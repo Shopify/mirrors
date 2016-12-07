@@ -33,5 +33,9 @@ module Mirrors
     def mirrors(list)
       list.collect { |e| Mirrors.reflect(e) }
     end
+
+    def subject_send(owner, message, *args)
+      Mirrors.rebind(owner, @subject, message).call(*args)
+    end
   end
 end

@@ -1,6 +1,15 @@
 module Mirrors
   # A specific mirror for a class, that includes all the capabilites
   # and information we can gather about classes.
+  #
+  # We are careful to not call methods directly on +@subject+ here, since
+  # people really like to override weird methods on their classes. Instead we
+  # borrow the methods from +Module+, +Kernel+, or +Class+ directly and bind
+  # them to the subject.
+  #
+  # We don't need to be nearly as careful about this with +Method+ or
+  # +UnboundMethod+ objects, since they consist of two core classes, not an
+  # arbitrary user class.
   class ClassMirror < ObjectMirror
     def initialize(obj)
       super(obj)
@@ -9,7 +18,7 @@ module Mirrors
     end
 
     def is_class # rubocop:disable Style/PredicateName
-      @subject.is_a?(Class)
+      subject_send(Kernel, :is_a?, Class)
     end
 
     def package
@@ -24,22 +33,22 @@ module Mirrors
     # @see #instance_variables
     # @return [Array<FieldMirror>]
     def class_variables
-      field_mirrors(@subject.class_variables)
+      field_mirrors(subject_send(Module, :class_variables))
     end
 
     # The known class variables.
     # @see #instance_variables
     # @return [Array<FieldMirror>]
     def class_instance_variables
-      field_mirrors(@subject.instance_variables)
+      field_mirrors(subject_send(Module, :instance_variables))
     end
 
     # The source files this class is defined and/or extended in.
     #
     # @return [Array<String,File>]
     def source_files
-      locations = @subject.instance_methods(false).collect do |name|
-        method = @subject.instance_method(name)
+      locations = subject_send(Module, :instance_methods, false).collect do |name|
+        method = subject_send(Module, :instance_method, name)
         sl = method.source_location
         sl.first if sl
       end
@@ -50,7 +59,7 @@ module Mirrors
     #
     # @return [ClassMirror]
     def singleton_class
-      Mirrors.reflect(@subject.singleton_class)
+      Mirrors.reflect(subject_send(Kernel, :singleton_class))
     end
 
     # Predicate to determine whether the subject is a singleton class
@@ -64,14 +73,14 @@ module Mirrors
     #
     # @return [Array<ClassMirror>]
     def mixins
-      mirrors(@subject.ancestors.reject { |m| m.is_a?(Class) })
+      mirrors(subject_send(Module, :ancestors).reject { |m| m.is_a?(Class) })
     end
 
     # The direct superclass
     #
     # @return [ClassMirror]
     def superclass
-      Mirrors.reflect(@subject.superclass)
+      Mirrors.reflect(subject_send(Class.singleton_class, :superclass))
     end
 
     # The known subclasses
@@ -85,7 +94,7 @@ module Mirrors
     #
     # @return [Array<ClassMirror>]
     def ancestors
-      mirrors(@subject.ancestors)
+      mirrors(subject_send(Module, :ancestors))
     end
 
     # The constants defined within this class. This includes nested
@@ -93,7 +102,7 @@ module Mirrors
     #
     # @return [Array<FieldMirror>]
     def constants
-      field_mirrors(@subject.constants)
+      field_mirrors(subject_send(Module, :constants))
     end
 
     # Searches for the named constant in the mirrored namespace. May
@@ -103,8 +112,11 @@ module Mirrors
     # @return [ClassMirror, nil] the requested constant, or nil
     def constant(str)
       path = str.to_s.split("::")
-      c = path[0..-2].inject(@subject) { |klass, s| klass.const_get(s) }
-      field_mirror (c || @subject), path.last
+      c = path[0..-2].inject(@subject) do |klass, s|
+        Mirrors.rebind(Module, klass, :const_get).call(s)
+      end
+
+      field_mirror((c || @subject), path.last)
     rescue NameError => e
       p e
       nil
@@ -115,8 +127,8 @@ module Mirrors
     # @return [Array<ClassMirror>]
     def nesting
       ary = []
-      @subject.name.split('::').inject(Object) do |klass, str|
-        ary << klass.const_get(str)
+      subject_send(Module, :name).split('::').inject(Object) do |klass, str|
+        ary << Mirrors.rebind(Module, klass, :const_get).call(str)
         ary.last
       end
       ary.reverse
@@ -129,13 +141,18 @@ module Mirrors
     #
     # @return [Array<ClassMirror>]
     def nested_classes
-      nc = @subject.constants.collect do |c|
+      nc = subject_send(Module, :constants).map do |c|
         # do not trigger autoloads
-        if @subject.const_defined?(c) && !@subject.autoload?(c)
-          @subject.const_get(c)
+        if subject_send(Module, :const_defined?, c) && !subject_send(Module, :autoload?, c)
+          subject_send(Module, :const_get, c)
         end
       end
-      mirrors(nc.compact.select { |c| c.is_a?(Module) }.sort_by(&:name))
+
+      consts = nc.compact.select do |c|
+        Mirrors.rebind(Kernel, c, :is_a?).call(Module)
+      end
+
+      mirrors(consts.sort_by { |c| Mirrors.rebind(Module, c, :name).call })
     end
 
     def nested_class_count
@@ -147,19 +164,19 @@ module Mirrors
     #
     # @return [Array<MethodMirror>]
     def methods
-      pub_names  = @subject.public_instance_methods(false)
-      prot_names = @subject.protected_instance_methods(false)
-      priv_names = @subject.private_instance_methods(false)
+      pub_names  = subject_send(Module, :public_instance_methods, false)
+      prot_names = subject_send(Module, :protected_instance_methods, false)
+      priv_names = subject_send(Module, :private_instance_methods, false)
 
       mirrors = []
       pub_names.sort.each do |n|
-        mirrors << Mirrors.reflect(@subject.instance_method(n))
+        mirrors << Mirrors.reflect(subject_send(Module, :instance_method, n))
       end
       prot_names.sort.each do |n|
-        mirrors << Mirrors.reflect(@subject.instance_method(n))
+        mirrors << Mirrors.reflect(subject_send(Module, :instance_method, n))
       end
       priv_names.sort.each do |n|
-        mirrors << Mirrors.reflect(@subject.instance_method(n))
+        mirrors << Mirrors.reflect(subject_send(Module, :instance_method, n))
       end
       mirrors
     end
@@ -169,11 +186,11 @@ module Mirrors
     #
     # @return [MethodMirror, nil] the method or nil, if none was found
     def method(name)
-      Mirrors.reflect @subject.instance_method(name)
+      Mirrors.reflect(subject_send(Module, :instance_method, name))
     end
 
     def name
-      Mirrors.rebind(Module, @subject, :inspect).call
+      subject_send(Module, :inspect)
     end
 
     def demodulized_name

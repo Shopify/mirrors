@@ -1,7 +1,6 @@
 require 'method_source'
 require 'base64'
 require 'ripper'
-require 'pp'
 require 'mirrors/iseq/references_visitor'
 
 module Mirrors
@@ -38,8 +37,7 @@ module Mirrors
       Mirrors.reflect @subject.send(:owner)
     end
 
-    # Return the value the block argument, or nil
-    #
+    # Return the value the block argument, if any
     # @return [String, nil]
     def block_argument
       args(:block).first
