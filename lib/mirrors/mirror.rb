@@ -34,8 +34,16 @@ module Mirrors
       list.collect { |e| Mirrors.reflect(e) }
     end
 
-    def subject_send(owner, message, *args)
-      Mirrors.rebind(owner, @subject, message).call(*args)
+    def subject_send_from_module(message, *args)
+      Mirrors.rebind(Module, @subject, message).call(*args)
+    end
+
+    def subject_send_from_kernel(message, *args)
+      Mirrors.rebind(Kernel, @subject, message).call(*args)
+    end
+
+    def subject_send_from_class(message, *args)
+      Mirrors.rebind(Class.singleton_class, @subject, message).call(*args)
     end
   end
 end
