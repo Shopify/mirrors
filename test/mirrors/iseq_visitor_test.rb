@@ -24,7 +24,7 @@ module Mirrors
       largest_method = nil
 
       Mirrors.classes.each do |klass|
-        klass.methods.each do |meth|
+        klass.instance_methods.each do |meth|
           visitor = CountingVisitor.new
           visitor.call(meth.native_code)
           bytecode_count += visitor.count

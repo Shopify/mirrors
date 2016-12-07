@@ -25,6 +25,8 @@ module Mirrors
       Mirrors::PackageInference::ClassToFileResolver.new.resolve(self)
     end
 
+    # Is this a Class, as opposed to a Module?
+    # @return [true, false]
     def is_class # rubocop:disable Style/PredicateName
       subject_is_a?(Class)
     end
@@ -183,34 +185,48 @@ module Mirrors
     # ask the #singleton_class for its methods.
     #
     # @return [Array<MethodMirror>]
-    def methods
-      pub_names  = subject_send_from_module(:public_instance_methods, false)
-      prot_names = subject_send_from_module(:protected_instance_methods, false)
-      priv_names = subject_send_from_module(:private_instance_methods, false)
+    def singleton_methods
+      mirrors(all_instance_methods(subject_singleton_class))
+    end
 
-      mirrors = []
-      pub_names.sort.each do |n|
-        mirrors << Mirrors.reflect(subject_send_from_module(:instance_method, n))
-      end
-      prot_names.sort.each do |n|
-        mirrors << Mirrors.reflect(subject_send_from_module(:instance_method, n))
-      end
-      priv_names.sort.each do |n|
-        mirrors << Mirrors.reflect(subject_send_from_module(:instance_method, n))
-      end
-      mirrors
+    # The instance methods of this class. To get to the class methods,
+    # ask the #singleton_class for its methods.
+    #
+    # @return [Array<MethodMirror>]
+    def instance_methods
+      mirrors(all_instance_methods(@subject))
     end
 
     # The instance method of this class or any of its superclasses
     # that has the specified selector
     #
+    # @param [Symbol] name of the method to look up
     # @return [MethodMirror, nil] the method or nil, if none was found
-    def method(name)
+    # @raise [NameError] if the module isn't present
+    def instance_method(name)
       Mirrors.reflect(subject_send_from_module(:instance_method, name))
     end
 
-    # +name+ itself is blank for anonymous/singleton classes
+    # The singleton/static method of this class or any of its superclasses
+    # that has the specified selector
+    #
+    # @param [Symbol] name of the method to look up
+    # @return [MethodMirror, nil] the method or nil, if none was found
+    # @raise [NameError] if the module isn't present
+    def singleton_method(name)
+      m = Mirrors.rebind(Module, subject_singleton_class, :instance_method).call(name)
+      Mirrors.reflect(m)
+    end
+
+    # This will probably prevent confusion
+    alias_method :__methods, :methods
+    undef methods
+    alias_method :__method, :method
+    undef method
+
+    # @return [String]
     def name
+      # +name+ itself is blank for anonymous/singleton classes
       subject_send_from_module(:inspect)
     end
 
@@ -235,6 +251,15 @@ module Mirrors
 
     def subject_send_from_module(message, *args)
       Mirrors.rebind(Module, @subject, message).call(*args)
+    end
+
+    def all_instance_methods(mod)
+      pub_prot_names = Mirrors.rebind(Module, mod, :instance_methods).call(false)
+      priv_names = Mirrors.rebind(Module, mod, :private_instance_methods).call(false)
+
+      (pub_prot_names.sort + priv_names.sort).map do |n|
+        Mirrors.rebind(Module, mod, :instance_method).call(n)
+      end
     end
   end
 end

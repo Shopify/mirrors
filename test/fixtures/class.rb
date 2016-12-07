@@ -12,18 +12,27 @@ class ClassFixture
   end
   include ClassFixtureModule
 
-  attr_accessor :b
-  def a
-    @a = 1
-    @@cvb = 1
-  end
-
   @@cva = 1
   @civa = 1
 
-  def self.b
-    @@cvc = 1
-    @civb = 1
+  public def inst_pub
+  end
+
+  protected def inst_prot
+  end
+
+  private def inst_priv
+  end
+
+  class << self
+    public def singleton_pub
+    end
+
+    protected def singleton_prot
+    end
+
+    private def singleton_priv
+    end
   end
 end
 
