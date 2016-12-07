@@ -40,7 +40,7 @@ module Mirrors
     #
     # @param [Module] owner The class/module from which to unbind the named
     #   instance_method. If you want a singleton/static method, you may want
-    #   to pass (e.g.) +Class.singleton_method+.
+    #   to pass (e.g.) +Class.singleton_class+.
     # @param [Object] receiver The object to bind the method to. It must be an
     #   instance of +owner+ or one of its descendents.
     # @param [Symbol] msg The name of the method to rebind
