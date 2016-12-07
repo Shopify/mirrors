@@ -74,7 +74,19 @@ module Mirrors
     #
     # @return [true,false]
     def singleton_class?
-      name.match(/^\#<Class:.*>$/)
+      n = name
+      # #<Class:0x1234deadbeefcafe> is an anonymous class.
+      # #<Class:A> is the singleton class of A
+      # #<Class:#<Class:0x1234deadbeefcafe>> is the ginelton class of an
+      #   anonymous class
+      n.match(/^\#<Class:.*>$/) && !n.match(/^\#<Class:0x\h+>$/)
+    end
+
+    # Is this an anonymous class or module?
+    #
+    # @return [true,false]
+    def anonymous?
+      name.match(/^\#<(Class|Module):0x\h+>$/)
     end
 
     # The mixins included in the ancestors of this class.

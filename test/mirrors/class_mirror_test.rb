@@ -67,6 +67,34 @@ module Mirrors
       end
     end
 
+    def test_singleton_class_and_anonymous
+      anon_c    = Mirrors.reflect(Class.new)
+      anon_c_sc = anon_c.singleton_class
+      anon_m    = Mirrors.reflect(Module.new)
+      anon_m_sc = anon_m.singleton_class
+
+      named_c    = Mirrors.reflect(ClassFixture)
+      named_c_sc = named_c.singleton_class
+
+      refute(anon_c.singleton_class?)
+      assert(anon_c.anonymous?)
+
+      assert(anon_c_sc.singleton_class?)
+      refute(anon_c_sc.anonymous?) # true seems valid too; we define to be false.
+
+      refute(anon_m.singleton_class?)
+      assert(anon_m.anonymous?)
+
+      assert(anon_m_sc.singleton_class?)
+      refute(anon_m_sc.anonymous?) # true seems valid too; we define to be false.
+
+      refute(named_c.singleton_class?)
+      refute(named_c.anonymous?)
+
+      assert(named_c_sc.singleton_class?)
+      refute(named_c_sc.anonymous?)
+    end
+
     def test_superclass
       assert_equal(ClassFixture.superclass.name, @m.superclass.name)
     end
