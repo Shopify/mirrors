@@ -17,6 +17,7 @@ module Mirrors
   @logger = Logger.new(STDOUT)
   @unbound_methods = {}
 
+  # Indicates we weren't able to infer the root directory of the project.
   ProjectRootNotFound = Class.new(StandardError)
 
   class << self
@@ -54,6 +55,9 @@ module Mirrors
       meth.bind(receiver)
     end
 
+    # Generate PackageMirrors representing all the "packages" in the system.
+    #
+    # @return [Array<PackageMirror>]
     def packages
       packages = {}
       # Object is the top-level.
@@ -135,7 +139,7 @@ module Mirrors
     end
 
     # Create a mirror for a given object in the system under
-    # observation.  This is *the* factory method for all mirror
+    # observation. This is *the* factory method for all mirror
     # instances, interning and cache invalidation will be added here.
     #
     # @param [Object] obj
