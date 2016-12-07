@@ -23,11 +23,11 @@ module Mirrors
 
     def test_constants
       names = @m.constants.collect(&:name)
-      assert_includes(names, "Foo")
+      assert_includes(names, "FOO")
     end
 
     def test_constant
-      assert_equal("Foo", @m.constant("Foo").name)
+      assert_equal("FOO", @m.constant("FOO").name)
     end
 
     def test_nested_constant
@@ -81,7 +81,7 @@ module Mirrors
     end
 
     def test_constant_value
-      assert_equal("Bar", @m.constant("Foo").value.name)
+      assert_equal("Bar", @m.constant("FOO").value.name)
     end
   end
 end

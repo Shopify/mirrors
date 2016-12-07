@@ -1,3 +1,5 @@
+# rubocop:disable Style/ClassVars
+
 class FieldFixture
   attr_accessor :ivar
   def initialize

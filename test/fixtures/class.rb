@@ -1,8 +1,10 @@
+# rubocop:disable Style/ClassVars
+
 module ClassFixtureModule
 end
 
 class ClassFixture
-  Foo = "Bar"
+  FOO = "Bar"
 
   class ClassFixtureNested
     class ClassFixtureNestedNested

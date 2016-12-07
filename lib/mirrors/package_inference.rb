@@ -99,8 +99,8 @@ module Mirrors
           next unless filename.start_with?(path)
           # extract e.g. 'bundler-1.13.6'
           gem_with_version = filename[path.size..-1].sub(%r{/.*}, '')
-          if gem_with_version =~ /(.*)-(\d|[a-f0-9]+$)/
-            return GEM_PACKAGE_PREFIX + $1
+          if md = gem_with_version.match(/(.*)-(\d|[a-f0-9]+$)/)
+            return GEM_PACKAGE_PREFIX + md[1]
           end
         end
       end
@@ -112,8 +112,8 @@ module Mirrors
         path = bundle_path
         if filename.start_with?(path)
           gem_with_version = filename[path.size..-1].sub(%r{/.*}, '')
-          if gem_with_version =~ /(.*)-(\d|[a-f0-9]+$)/
-            return GEM_PACKAGE_PREFIX + $1
+          if md = gem_with_version.match(/(.*)-(\d|[a-f0-9]+$)/)
+            return GEM_PACKAGE_PREFIX + md[1]
           end
         end
       end
@@ -126,7 +126,7 @@ module Mirrors
 
     def try_harder(key, exclusions, resolver)
       obj = Object.const_get(key)
-      return 'obj-not-module' unless obj.is_a?(Module)
+      return 'unknown' unless obj.is_a?(Module)
       exclusions << obj
 
       obj.constants.each do |const|
@@ -140,7 +140,7 @@ module Mirrors
         return pkg unless pkg == 'unknown'
       end
 
-      return 'unknown'
+      'unknown'
     end
 
     def nesting_first(n)

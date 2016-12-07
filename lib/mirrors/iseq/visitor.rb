@@ -50,13 +50,14 @@ module Mirrors
         @pc = 0
         @label = nil
         @bytecode.each_with_index do |bc|
-          if bc.class == Integer || bc.class == Fixnum
+          case bc
+          when Numeric
             @line = bc # bare line number
             next # line numbers are not executable
-          elsif bc.class == Symbol
+          when Symbol
             @label = bc
             next # labels are not executable
-          elsif bc.class == Array
+          when Array
             @opcode = YASMData.id2insn_no(bc.first)
             unrecognized_bytecode(bc) unless @opcode
             visit(bc)

@@ -8,7 +8,7 @@ module Mirrors
       @method_mirrors = {}
     end
 
-    def is_class
+    def is_class # rubocop:disable Style/PredicateName
       @subject.is_a?(Class)
     end
 

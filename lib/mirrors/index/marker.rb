@@ -12,7 +12,14 @@ module Mirrors
 
     attr_reader :message, :type, :file, :line, :start_column, :end_column
 
-    def initialize(type: TYPE_TASK, message: '', file: nil, line: NO_LINE, start_column: NO_COLUMN, end_column: NO_COLUMN)
+    def initialize(
+      type: TYPE_TASK,
+      message: '',
+      file: nil,
+      line: NO_LINE,
+      start_column: NO_COLUMN,
+      end_column: NO_COLUMN
+    )
       @type = type
       @message = message
       @file = file
@@ -22,7 +29,11 @@ module Mirrors
     end
 
     def ==(other)
-      type == other.type && message == other.message && line == other.line && start_column == other.start_column && end_column == other.end_column
+      type == other.type && \
+        message == other.message && \
+        line == other.line && \
+        start_column == other.start_column && \
+        end_column == other.end_column
     end
 
     def eql?(other)

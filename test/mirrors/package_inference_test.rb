@@ -1,8 +1,7 @@
 require 'test_helper'
 
 module Mirrors
-  class PackageInferenceTest <  MiniTest::Test
-
+  class PackageInferenceTest < MiniTest::Test
     def test_core
       assert_equal('core', PackageInference.infer_from(Object))
       assert_equal('core', PackageInference.infer_from(Errno::EAGAIN))

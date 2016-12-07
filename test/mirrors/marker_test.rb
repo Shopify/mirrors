@@ -3,9 +3,24 @@ require 'test_helper'
 module Mirrors
   class MarkerTest < MiniTest::Test
     def setup
-      @class_marker = Marker.new(type: Marker::TYPE_CLASS_REFERENCE, message: 'Class', file: __FILE__, line: __LINE__)
-      @field_marker = Marker.new(type: Marker::TYPE_FIELD_REFERENCE, message: 'Field', file: __FILE__, line: __LINE__)
-      @method_marker = Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: 'Method', file: __FILE__, line: __LINE__)
+      @class_marker = Marker.new(
+        type: Marker::TYPE_CLASS_REFERENCE,
+        message: 'Class',
+        file: __FILE__,
+        line: __LINE__
+      )
+      @field_marker = Marker.new(
+        type: Marker::TYPE_FIELD_REFERENCE,
+        message: 'Field',
+        file: __FILE__,
+        line: __LINE__
+      )
+      @method_marker = Marker.new(
+        type: Marker::TYPE_METHOD_REFERENCE,
+        message: 'Method',
+        file: __FILE__,
+        line: __LINE__
+      )
       super
     end
 

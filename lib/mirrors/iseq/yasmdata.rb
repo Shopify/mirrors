@@ -1,7 +1,7 @@
 module Mirrors
   module ISeq
     module YASMData
-      InsnID2NO = {
+      INSTRUCTION_ID_TO_NUMBER = {
         nop: 0,
         getlocal: 1,
         setlocal: 2,
@@ -99,12 +99,10 @@ module Mirrors
       }
 
       def self.id2insn_no(id)
-        if InsnID2NO.key? id
-          InsnID2NO[id]
-        end
+        INSTRUCTION_ID_TO_NUMBER[id]
       end
 
-      InsnNO2Size = [
+      INSTRUCTION_SIZE = [
         1, # nop => 0
         3, # getlocal => 1
         3, # setlocal => 2
@@ -201,7 +199,7 @@ module Mirrors
       ]
 
       def self.insn_no2size(ins_no)
-        InsnNO2Size[ins_no]
+        INSTRUCTION_SIZE[ins_no]
       end
     end
   end

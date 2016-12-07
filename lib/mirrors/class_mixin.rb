@@ -1,8 +1,8 @@
 module Mirrors
   refine Class do
     # convenience operator for method reflection inspired by Smalltalk
-    def >>(symbol)
-      Mirrors.reflect(method(symbol))
+    def >>(other)
+      Mirrors.reflect(method(other))
     end
   end
 end
