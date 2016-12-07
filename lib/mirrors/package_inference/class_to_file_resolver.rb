@@ -27,7 +27,7 @@ module Mirrors
       end
 
       def try_fast(cm, demodulized_name)
-        cm.methods.each do |mm|
+        cm.instance_methods.each do |mm|
           file = mm.file
           next unless file
 
@@ -39,7 +39,7 @@ module Mirrors
       end
 
       def try_slow(cm)
-        defined_directly_on_class = cm.methods
+        defined_directly_on_class = cm.instance_methods
           .select do |mm|
             # as a mostly-useful heuristic, we just eliminate everything that was
             # defined using a template eval or define_method.

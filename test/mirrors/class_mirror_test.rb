@@ -51,12 +51,25 @@ module Mirrors
     end
 
     def test_instance_methods
-      assert_equal(ClassFixture.instance_methods(false).size, @m.methods.size)
+      ims = @m.instance_methods
+      assert_equal(%i(inst_prot inst_pub inst_priv), ims.map(&:name))
     end
 
     def test_instance_method
-      n = ClassFixture.instance_methods.first
-      assert(@m.method(n).mirrors?(ClassFixture.instance_method(n)))
+      meth = @m.instance_method(:inst_prot)
+      assert_equal(:inst_prot, meth.name)
+      assert_equal(:protected, meth.visibility)
+    end
+
+    def test_singleton_methods
+      sms = @m.singleton_methods
+      assert_equal(%i(singleton_prot singleton_pub singleton_priv), sms.map(&:name))
+    end
+
+    def test_singleton_method
+      meth = @m.singleton_method(:singleton_priv)
+      assert_equal(:singleton_priv, meth.name)
+      assert_equal(:private, meth.visibility)
     end
 
     def test_ancestors

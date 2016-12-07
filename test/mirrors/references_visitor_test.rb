@@ -12,7 +12,7 @@ module Mirrors
     end
 
     def test_victim_class
-      method = Mirrors.reflect(Victim).methods.first
+      method = Mirrors.reflect(Victim).instance_methods.first
       refs = method.references
       assert_equal(4, refs.size)
       c1 = Marker.new(type: Marker::TYPE_CLASS_REFERENCE, message: :Kernel, file: __FILE__, line: 10)

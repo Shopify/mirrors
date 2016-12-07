@@ -29,7 +29,7 @@ module Mirrors
     end
 
     def test_public_method
-      m = @cm.method(:method_p_public)
+      m = @cm.instance_method(:method_p_public)
       assert(m.public?)
       refute(m.protected?)
       refute(m.private?)
@@ -37,7 +37,7 @@ module Mirrors
     end
 
     def test_protected_method
-      m = @cm.method(:method_p_protected)
+      m = @cm.instance_method(:method_p_protected)
       refute(m.public?)
       assert(m.protected?)
       refute(m.private?)
@@ -45,7 +45,7 @@ module Mirrors
     end
 
     def test_private_method
-      m = @cm.method(:method_p_private)
+      m = @cm.instance_method(:method_p_private)
       refute(m.public?)
       refute(m.protected?)
       assert(m.private?)
