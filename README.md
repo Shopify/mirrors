@@ -11,7 +11,7 @@ cm = Mirrors.reflect(String)
 puts cm.inspect
 # => #<Mirrors::ClassMirror...>
 
-mms = cm.methods
+mms = cm.instance_methods
 mm = mms.last
 puts mm.inspect
 # => #<Mirrors::MethodMirror...>
@@ -22,7 +22,7 @@ puts mm.name
 puts mm.defining_class.name
 # => String
 
-puts cm.methods.group_by(&:visibility).map { |vis, ms| [vis, ms.count] }
+puts cm.instance_methods.group_by(&:visibility).map { |vis, ms| [vis, ms.count] }
 # => [[:public, 118], [:private, 2]]
 
 require 'base64'
