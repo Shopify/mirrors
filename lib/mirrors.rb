@@ -125,12 +125,7 @@ module Mirrors
       ObjectSpace.each_object(Module).each do |mod|
         cm = reflect(mod)
 
-        cm.methods.each do |m|
-          refs = m.references.select { |marker| marker.message == msg }
-          filtered[m] = refs unless refs.empty?
-        end
-
-        cm.singleton_class.methods.each do |m|
+        (cm.instance_methods + cm.class_methods).each do |m|
           refs = m.references.select { |marker| marker.message == msg }
           filtered[m] = refs unless refs.empty?
         end
