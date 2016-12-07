@@ -226,6 +226,8 @@ module Mirrors
       @field_mirrors[mirror.name] ||= mirror
     end
 
+    private
+
     # This one is not defined on Module since it only applies to classes
     def subject_superclass
       Mirrors.rebind(Class.singleton_class, @subject, :superclass).call
