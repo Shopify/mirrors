@@ -1,34 +1,31 @@
 module Mirrors
+  # A mirror to track a constant on an object.
+  # @see FieldMirror
   class ConstantMirror < FieldMirror
+    # @return [Mirror] the reflected value. Will be a {ClassMirror} if the
+    #   constant refers to a class, or an {ObjectMirror} otherwise. It could in
+    #   theory be any other type of {Mirror} too, depending on what was assigned
+    #   to the constant.
     def value
-      if path = @object.autoload?(@name)
-        unless $LOADED_FEATURES.include?(path) ||
-            $LOADED_FEATURES.include?(File.expand_path(path))
-          # Do not trigger autoload
-          return nil
-        end
-      end
-      Mirrors.reflect @object.const_get(@name)
+      Mirrors.reflect(@object.const_get(@name))
     end
 
-    def value=(o)
-      @object.const_set(@name, o)
-    end
-
+    # @return [Boolean] Is this a public constant? This is the default.
     def public?
-      true
+      # +constants(true)+ doesn't return private constants. We could get at
+      # them with +constants(false)+.
+      @object.constants(true).include?(@name)
     end
 
+    # @return [false] constants are never protected.
     def protected?
       false
     end
 
+    # @return [Boolean] Is this a private constant (was it tagged with
+    #   +private_constant+)?
     def private?
-      false
-    end
-
-    def delete
-      @object.send(:remove_const, @name)
+      !@object.constants(true).include?(@name)
     end
   end
 end

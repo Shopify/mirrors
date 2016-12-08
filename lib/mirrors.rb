@@ -10,6 +10,9 @@ require 'mirrors/package_inference'
 require 'mirrors/class_mixin'
 require 'mirrors/iseq'
 
+# Mirrors provides a parallel-world reflection API for ruby.
+# See {file:README.md} for more information.
+# @todo more words here
 module Mirrors
   @class_mirrors = {}
   @package_mirrors = {}
@@ -193,7 +196,10 @@ module Mirrors
     end
 
     def intern_field_mirror(mirror)
-      mirror.defining_class.intern_field_mirror(mirror)
+      mir = mirror.owner
+      # It can also be an ObjectMirror, which doesn't intern.
+      return mir unless mir.is_a?(ClassMirror)
+      mirror.owner.intern_field_mirror(mirror)
     end
 
     def intern_package_mirror(mirror)
