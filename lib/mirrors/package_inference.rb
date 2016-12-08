@@ -1,6 +1,7 @@
 require 'rbconfig'
 require 'set'
 
+require 'mirrors/package'
 require 'mirrors/package_inference/class_to_file_resolver'
 
 module Mirrors
@@ -21,7 +22,7 @@ module Mirrors
       # @param [Module] mod the +Class+ or +Module+ for which to determine the package.
       # @param [ClassToFileResolver] resolver caches some data internally, so if you're
       #   going to call +infer_from+ many times, it's useful to provide one.
-      # @return [String] A package name for the given module.
+      # @return [Package] The package of the given module
       def infer_from(mod, resolver = ClassToFileResolver.new)
         insp = Mirrors.rebind(Module, mod, :inspect).call
         infer_from_key(insp, resolver)
@@ -34,7 +35,7 @@ module Mirrors
       # @param [Symbol] sym The name of the toplevel constant to use.
       # @param [ClassToFileResolver] resolver caches some data internally, so if you're
       #   going to call +infer_from+ many times, it's useful to provide one.
-      # @return [String] A package name for the given constant.
+      # @return [Package] The package of the given constant.
       def infer_from_toplevel(sym, resolver = ClassToFileResolver.new)
         infer_from_key(sym.to_s, resolver)
       end
@@ -43,13 +44,13 @@ module Mirrors
       # @return [Array<String>] All the items sorted into +pkg+ so far.
       #   An array of package {ClassMirror#name}s.
       def contents_of_package(pkg)
-        (@inverse_cache || {})[pkg]
+        (@inverse_cache || {})[pkg.name]
       end
 
       # @return [Array<String>] All the packages that have been determined to
       #   exist so far.
       def qualified_packages
-        (@inverse_cache || {}).keys
+        (@inverse_cache || {}).keys.map { |n| Package.new(n) }
       end
 
       private
@@ -63,8 +64,8 @@ module Mirrors
 
         pkg = uncached_infer_from(key, [], resolver)
         @inference_cache[key] = pkg
-        @inverse_cache[pkg] ||= []
-        @inverse_cache[pkg] << key
+        @inverse_cache[pkg.name] ||= []
+        @inverse_cache[pkg.name] << key
 
         pkg
       end
@@ -89,12 +90,12 @@ module Mirrors
         RUBY_ENGINE RUBY_ENGINE_VERSION TracePoint ARGV DidYouMean
       )).freeze
 
-      CORE_PACKAGE         = 'core'.freeze
-      CORE_STDLIB_PACKAGE  = 'core:stdlib'.freeze
-      APPLICATION_PACKAGE  = 'application'.freeze
+      CORE_PACKAGE         = Package.new('core'.freeze)
+      CORE_STDLIB_PACKAGE  = Package.new('core:stdlib'.freeze)
+      APPLICATION_PACKAGE  = Package.new('application'.freeze)
+      UNKNOWN_PACKAGE      = Package.new('unknown'.freeze)
+      UNKNOWN_EVAL_PACKAGE = Package.new('unknown:eval'.freeze)
       GEM_PACKAGE_PREFIX   = 'gems:'.freeze
-      UNKNOWN_PACKAGE      = 'unknown'.freeze
-      UNKNOWN_EVAL_PACKAGE = 'unknown:eval'.freeze
 
       def uncached_infer_from(key, exclusions, resolver)
         return CORE_PACKAGE if CORE.include?(nesting_first(key))
@@ -128,7 +129,7 @@ module Mirrors
             # extract e.g. 'bundler-1.13.6'
             gem_with_version = filename[path.size..-1].sub(%r{/.*}, '')
             if md = gem_with_version.match(/(.*)-(\d|[a-f0-9]+$)/)
-              return GEM_PACKAGE_PREFIX + md[1]
+              return Package.new(GEM_PACKAGE_PREFIX + md[1])
             end
           end
         end
@@ -141,7 +142,7 @@ module Mirrors
           if filename.start_with?(path)
             gem_with_version = filename[path.size..-1].sub(%r{/.*}, '')
             if md = gem_with_version.match(/(.*)-(\d|[a-f0-9]+$)/)
-              return GEM_PACKAGE_PREFIX + md[1]
+              return Package.new(GEM_PACKAGE_PREFIX + md[1])
             end
           end
         end
@@ -157,7 +158,7 @@ module Mirrors
 
       def try_harder(key, exclusions, resolver)
         obj = Object.const_get(key)
-        return 'unknown' unless obj.is_a?(Module)
+        return UNKNOWN_PACKAGE unless obj.is_a?(Module)
         exclusions << obj
 
         obj.constants.each do |const|
@@ -168,10 +169,10 @@ module Mirrors
 
           insp = Mirrors.rebind(Module, child, :inspect).call
           pkg = uncached_infer_from(insp, exclusions, resolver)
-          return pkg unless pkg == 'unknown'
+          return pkg unless pkg == UNKNOWN_PACKAGE
         end
 
-        'unknown'
+        UNKNOWN_PACKAGE
       end
 
       def nesting_first(n)

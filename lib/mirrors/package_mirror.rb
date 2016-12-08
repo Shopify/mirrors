@@ -3,35 +3,66 @@ require 'mirrors/package_inference'
 
 module Mirrors
   class PackageMirror < Mirror
-    def self.reflect(name)
-      new(name)
-    end
-
+    # @example
+    #   Mirrors.reflect(Package.new('gems:minitest')).qualified_name
+    #   #=> 'minitest'
+    # @see qualified_name
+    # @return [String] the abbreviated name, excluding namespace
     def name
-      @reflectee.sub(/.*:/, '')
+      @reflectee.name.sub(/.*:/, '')
     end
 
-    def fullname
-      @reflectee
+    # @example
+    #   Mirrors.reflect(Package.new('gems:minitest')).qualified_name
+    #   #=> 'gems:minitest'
+    # @see name
+    # @return [String] the full name, including namespace
+    def qualified_name
+      @reflectee.name
+    end
+
+    # @example
+    #   Mirrors.reflect(Mirrors::Package.new("a:b")).nesting
+    #   #=> [#<PM:a:b>, #<PM:a>]
+    # @return [Array<PackageMirror>] The full package nesting.
+    def nesting
+      components = @reflectee
+        .name       # 'a:b:c'
+        .split(':') # ['a', 'b', 'c']
+
+      components
+        .size                                   # 3
+        .times                                  # #<Enumerator>
+        .map { |i| components[0..i].join(':') } # ['a', 'a:b', 'a:b:c']
+        .reverse                                # ['a:b:c', 'a:b', 'a']
+        .map { |n| Mirrors.reflect(Package.new(n)) }
+    end
+
+    # @example
+    #   Mirrors.reflect(Mirrors::Package.new("a:b")).parent #=> #<PM:a>
+    #   Mirrors.reflect(Mirrors::Package.new("abc")).parent #=> nil
+    # @return [PackageMirror,nil] The package one level up, if any.
+    def parent
+      n = @reflectee.name.sub(/:[^:]+$/, '')
+      return nil if n == @reflectee.name
+      Mirrors.reflect(Package.new(n))
     end
 
     def children
+      subpackages = PackageInference.qualified_packages
+        .select { |pkg| pkg.start_with?("#{@reflectee.name}:") }
+        .sort
+      mirrors(subpackages)
+    end
+
+    def contents
       names = PackageInference.contents_of_package(@reflectee)
       classes = (names || [])
         .map { |n| Object.const_get(n) }
         .select { |c| c.is_a?(Module) }
         .sort_by(&:name)
-      class_mirrors = mirrors(classes)
 
-      # .map    { |pkg| pkg.sub(/#{Regexp.quote(@reflectee)}:.*?:.*/) }
-      subpackages = PackageInference.qualified_packages
-        .select { |pkg| pkg.start_with?("#{@reflectee}:") }
-        .sort
-
-      puts subpackages.inspect
-
-      package_mirrors = subpackages.map { |pkg| PackageMirror.reflect(pkg) }
-      package_mirrors.concat(class_mirrors)
+      children.concat(mirrors(classes))
     end
   end
 end

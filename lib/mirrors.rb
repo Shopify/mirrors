@@ -1,5 +1,6 @@
 require 'logger'
 require 'mirrors/mirror'
+require 'mirrors/package'
 require 'mirrors/object_mirror'
 require 'mirrors/class_mirror'
 require 'mirrors/field_mirror'
@@ -12,6 +13,7 @@ require 'mirrors/index/indexer'
 
 module Mirrors
   @class_mirrors = {}
+  @package_mirrors = {}
   @constant_mirrors = {}
   @watches = {}
   @logger = Logger.new(STDOUT)
@@ -68,8 +70,9 @@ module Mirrors
         pkg = PackageInference.infer_from_toplevel(const)
         packages[pkg] = true
       end
-      toplevel_packages = packages.keys.map { |pkg| pkg.sub(/:.*/, '') }.sort
-      package_mirrors(toplevel_packages)
+      mirrors(packages)
+      # toplevel_packages = packages.keys.map { |pkg| pkg.sub(/:.*/, '') }.sort
+      # package_mirrors(toplevel_packages)
     end
 
     # List all known modules.
@@ -160,6 +163,8 @@ module Mirrors
           intern_method_mirror(MethodMirror.new(obj))
         elsif klass == Class || klass == Module
           intern_class_mirror(ClassMirror.new(obj))
+        elsif klass == Package
+          intern_package_mirror(PackageMirror.new(obj))
         else
           # TODO: revisit if ObjectMirror delivers value
           ObjectMirror.new(obj)
@@ -192,12 +197,12 @@ module Mirrors
       mirror.defining_class.intern_field_mirror(mirror)
     end
 
-    def mirrors(list)
-      list.map { |e| reflect(e) }
+    def intern_package_mirror(mirror)
+      @package_mirrors[mirror.name] ||= mirror
     end
 
-    def package_mirrors(list)
-      list.map { |e| PackageMirror.reflect(e) }
+    def mirrors(list)
+      list.map { |e| reflect(e) }
     end
   end
 end

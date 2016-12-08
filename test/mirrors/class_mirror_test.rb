@@ -123,7 +123,10 @@ module Mirrors
     def test_nesting
       m = Mirrors.reflect(ClassFixture::ClassFixtureNested)
       nesting = m.nesting
-      assert_equal([ClassFixture::ClassFixtureNested, ClassFixture], nesting)
+      exp = [
+        ClassFixture::ClassFixtureNested, ClassFixture
+      ].map { |f| Mirrors.reflect(f) }
+      assert_equal(exp, nesting)
     end
 
     def test_source_locations

@@ -154,7 +154,6 @@ module Mirrors
       mirrors(reflectee_send_from_module(:ancestors).reject { |m| m.is_a?(Class) })
     end
 
-    # @todo does this actually return +ClassMirror+s?
     # @return [Array<ClassMirror>] The full module nesting.
     def nesting
       ary = []
@@ -162,9 +161,9 @@ module Mirrors
         ary << Mirrors.rebind(Module, klass, :const_get).call(str)
         ary.last
       end
-      ary.reverse
+      ary.reverse.map { |n| Mirrors.reflect(n) }
     rescue NameError
-      [@reflectee]
+      [self]
     end
 
     # @return [Array<ClassMirror>] The classes nested within the reflectee.
