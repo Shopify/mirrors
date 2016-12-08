@@ -64,7 +64,12 @@ module Mirrors
           next unless file
           next if done.include?(file)
 
-          contents = (@files[file] ||= File.open(file, 'r') { |f| f.readpartial(4096) })
+          contents = begin
+            (@files[file] ||= File.open(file, 'r') { |f| f.readpartial(4096) })
+          rescue Errno::ENOENT
+            # file wasn't readable
+            ""
+          end
           pat = /^\s+(class|module) ([\S]+::)?#{Regexp.quote(demodulized_name)}\s/
           return file if contents =~ pat
           done << file
@@ -77,8 +82,12 @@ module Mirrors
           .select do |mm|
             # as a mostly-useful heuristic, we just eliminate everything that was
             # defined using a template eval or define_method.
-            src = mm.source
-            src && src =~ /\A\s+def (self\.)?#{Regexp.quote(mm.name)}/
+            begin
+              src = mm.source
+              src && src =~ /\A\s+def (self\.)?#{Regexp.quote(mm.name)}/
+            rescue NoMethodError # bug in method_source
+              false
+            end
           end
 
         files = Hash.new(0)

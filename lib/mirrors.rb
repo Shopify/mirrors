@@ -70,7 +70,7 @@ module Mirrors
         pkg = PackageInference.infer_from_toplevel(const)
         packages[pkg] = true
       end
-      mirrors(packages)
+      mirrors(packages.keys)
       # toplevel_packages = packages.keys.map { |pkg| pkg.sub(/:.*/, '') }.sort
       # package_mirrors(toplevel_packages)
     end

@@ -13,5 +13,20 @@ module Mirrors
     def initialize(name)
       @name = name
     end
+
+    # @!visibility private
+    def ==(other)
+      @name == other.name
+    end
+
+    # @!visibility private
+    def eql?(other)
+      self == other
+    end
+
+    # @!visibility private
+    def hash
+      @name.hash
+    end
   end
 end
