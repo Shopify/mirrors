@@ -1,16 +1,16 @@
 module Mirrors
   # A specific mirror for a class, that includes all the capabilites
   # and information we can gather about classes.
-  #
-  # We are careful to not call methods directly on +@subject+ here, since
-  # people really like to override weird methods on their classes. Instead we
-  # borrow the methods from +Module+, +Kernel+, or +Class+ directly and bind
-  # them to the subject.
-  #
-  # We don't need to be nearly as careful about this with +Method+ or
-  # +UnboundMethod+ objects, since they consist of two core classes, not an
-  # arbitrary user class.
   class ClassMirror < ObjectMirror
+    # We are careful to not call methods directly on +@subject+ here, since
+    # people really like to override weird methods on their classes. Instead we
+    # borrow the methods from +Module+, +Kernel+, or +Class+ directly and bind
+    # them to the subject.
+    #
+    # We don't need to be nearly as careful about this with +Method+ or
+    # +UnboundMethod+ objects, since their +@subject+s are two core classes,
+    # not an arbitrary user class.
+
     def initialize(obj)
       super(obj)
       @field_mirrors = {}
@@ -25,29 +25,31 @@ module Mirrors
       Mirrors::PackageInference::ClassToFileResolver.new.resolve(self)
     end
 
-    # Is this a Class, as opposed to a Module?
-    # @return [true, false]
+    # @return [true, false] Is this a Class, as opposed to a Module?
     def is_class # rubocop:disable Style/PredicateName
       subject_is_a?(Class)
     end
 
+    # @todo not yet implemented
+    # @return [PackageMirror] the "package" into which this class/module has
+    #   been sorted.
     def package
       # TODO(burke)
     end
 
+    # All constants, class vars, and class instance vars.
+    # @return [Array<FieldMirror>]
     def fields
-      [constants, class_variables, class_instance_variables, instance_variables].flatten
+      [constants, class_variables, class_instance_variables].flatten
     end
 
     # The known class variables.
-    # @see #instance_variables
     # @return [Array<FieldMirror>]
     def class_variables
       field_mirrors(subject_send_from_module(:class_variables))
     end
 
-    # The known class variables.
-    # @see #instance_variables
+    # The known class instance variables.
     # @return [Array<FieldMirror>]
     def class_instance_variables
       field_mirrors(subject_send_from_module(:instance_variables))
@@ -65,16 +67,12 @@ module Mirrors
       locations.compact.uniq
     end
 
-    # The singleton class of this class
-    #
-    # @return [ClassMirror]
+    # @return [ClassMirror] The singleton class of this class
     def singleton_class
       Mirrors.reflect(subject_singleton_class)
     end
 
-    # Predicate to determine whether the subject is a singleton class
-    #
-    # @return [true,false]
+    # @return [true,false] Is the subject is a singleton class?
     def singleton_class?
       n = name
       # #<Class:0x1234deadbeefcafe> is an anonymous class.
@@ -84,37 +82,28 @@ module Mirrors
       n.match(/^\#<Class:.*>$/) && !n.match(/^\#<Class:0x\h+>$/)
     end
 
-    # Is this an anonymous class or module?
-    #
-    # @return [true,false]
+    # @return [true,false] Is this an anonymous class or module?
     def anonymous?
       name.match(/^\#<(Class|Module):0x\h+>$/)
     end
 
-    # The mixins included in the ancestors of this class.
-    #
-    # @return [Array<ClassMirror>]
+    # @return [Array<ClassMirror>] The mixins included in the ancestors of this
+    #   class.
     def mixins
       mirrors(subject_send_from_module(:ancestors).reject { |m| m.is_a?(Class) })
     end
 
-    # The direct superclass
-    #
-    # @return [ClassMirror]
+    # @return [ClassMirror] The direct superclass
     def superclass
       Mirrors.reflect(subject_superclass)
     end
 
-    # The known subclasses
-    #
-    # @return [Array<ClassMirror>]
+    # @return [Array<ClassMirror>] The known subclasses
     def subclasses
       mirrors(ObjectSpace.each_object(Class).select { |a| a.superclass == @subject })
     end
 
-    # The list of ancestors
-    #
-    # @return [Array<ClassMirror>]
+    # @return [Array<ClassMirror>] The list of ancestors
     def ancestors
       mirrors(subject_send_from_module(:ancestors))
     end
@@ -144,9 +133,8 @@ module Mirrors
       nil
     end
 
-    # The full nesting.
-    #
-    # @return [Array<ClassMirror>]
+    # @todo does this actually return +ClassMirror+s?
+    # @return [Array<ClassMirror>] The full module nesting.
     def nesting
       ary = []
       subject_send_from_module(:name).split('::').inject(Object) do |klass, str|
@@ -158,10 +146,7 @@ module Mirrors
       [@subject]
     end
 
-    # The classes nested within the subject. Should _not_ trigger
-    # autloads!
-    #
-    # @return [Array<ClassMirror>]
+    # @return [Array<ClassMirror>] The classes nested within the subject.
     def nested_classes
       nc = subject_send_from_module(:constants).map do |c|
         # do not trigger autoloads
@@ -181,8 +166,7 @@ module Mirrors
       nested_classes.count
     end
 
-    # The instance methods of this class. To get to the class methods,
-    # ask the #singleton_class for its methods.
+    # The instance methods of this class.
     #
     # @return [Array<MethodMirror>]
     def singleton_methods

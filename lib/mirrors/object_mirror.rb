@@ -4,12 +4,12 @@ module Mirrors
   class ObjectMirror < Mirror
     # @return [FieldMirror] the instance variables of the object
     def variables
-      field_mirrors(@subject.instance_variables)
+      field_mirrors(subject_instance_variables)
     end
 
     # @return [ClassMirror] the a class mirror on the runtime class object
-    def target_class
-      Mirrors.reflect(@subject.class)
+    def reflectee_class
+      Mirrors.reflect(subject_class)
     end
 
     private

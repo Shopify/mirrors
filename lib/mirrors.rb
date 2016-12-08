@@ -46,6 +46,9 @@ module Mirrors
     #   instance of +owner+ or one of its descendents.
     # @param [Symbol] msg The name of the method to rebind
     #
+    # @example inspect a class that may have overridden +#inspect+
+    #   Mirrors.rebind(Module, klass, :inspect).call
+    #
     # @return [Method] Bound method object, invokable with +#call+
     # @raise [TypeError] if the +owner+ and +receiver+ are not compatible.
     # @raise [NameError] if +msg+ does not exist on +owner+.
@@ -103,16 +106,16 @@ module Mirrors
 
     # Query the system for implementors of a particular message
     #
-    # @param [String] str the message name
+    # @param [String] message the message name
     # @return [Array<MethodMirror>] the implementing methods
-    def implementations_of(str)
+    def implementations_of(message)
       methods = ObjectSpace.each_object(Module).collect do |m|
         ims = m.instance_methods(false).map { |s| m.instance_method(s) }
         cms = m.methods(false).map { |s| m.method(s) }
         ims + cms
       end.flatten
 
-      mirrors(methods.select { |m| m.name.to_s == str.to_s })
+      mirrors(methods.select { |m| m.name.to_s == message.to_s })
     end
 
     # Find all methods which send the given message to any object (i.e. call
