@@ -1,5 +1,5 @@
 require 'test_helper'
-require 'mirrors/index/marker'
+require 'mirrors/marker'
 
 module Mirrors
   class ReferencesVisitorTest < MiniTest::Test

@@ -1,5 +1,5 @@
 require 'mirrors/iseq/visitor'
-require 'mirrors/index/marker'
+require 'mirrors/marker'
 
 module Mirrors
   module ISeq
