@@ -226,7 +226,7 @@ module Mirrors
     # Cache a {MethodMirror} related to this {ClassMirror} in order to prevent
     # generating garbage each time methods are returned. Idempotent.
     #
-    # @param [MethodMirror] the mirror to be interned
+    # @param [MethodMirror] mirror the mirror to be interned
     # @return [MethodMirror] the interned mirror. If already interned, the
     #   previous version.
     def intern_method_mirror(mirror)
@@ -236,7 +236,7 @@ module Mirrors
     # Cache a {FieldMirror} related to this {ClassMirror} in order to prevent
     # generating garbage each time fields are returned. Idempotent.
     #
-    # @param [FieldMirror] the mirror to be interned
+    # @param [FieldMirror] mirror the mirror to be interned
     # @return [FieldMirror] the interned mirror. If already interned, the
     #   previous version.
     def intern_field_mirror(mirror)

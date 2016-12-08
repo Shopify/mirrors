@@ -7,9 +7,9 @@ module Mirrors
       field_mirrors(reflectee_instance_variables)
     end
 
-    # @return [ClassMirror] the a class mirror on the runtime class object
+    # @return [ClassMirror] a mirror for the class of the reflected object
     def reflectee_class
-      Mirrors.reflect(reflectee_class)
+      Mirrors.reflect(Mirrors.rebind(Kernel, @reflectee, :class).call)
     end
 
     private

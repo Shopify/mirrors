@@ -52,10 +52,6 @@ module Mirrors
       Mirrors.rebind(Kernel, @reflectee, :instance_variables).call
     end
 
-    def reflectee_class
-      Mirrors.rebind(Kernel, @reflectee, :class).call
-    end
-
     def reflectee_singleton_class
       Mirrors.rebind(Kernel, @reflectee, :singleton_class).call
     end
