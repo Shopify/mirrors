@@ -1,6 +1,9 @@
 module Mirrors
   module ISeq
+    # Data exported from ruby to help give us the knowledge required to walk
+    # YARV bytecode.
     module YASMData
+      # Opcode name to instruction number
       INSTRUCTION_ID_TO_NUMBER = {
         nop: 0,
         getlocal: 1,
@@ -95,13 +98,15 @@ module Mirrors
         setlocal_OP__WC__1: 90,
         putobject_OP_INT2FIX_O_0_C_: 91,
         putobject_OP_INT2FIX_O_1_C_: 92,
+      }.freeze
 
-      }
-
+      # @param [Symbol] id the instruction name
+      # @return [Integer] the instruction number
       def self.id2insn_no(id)
         INSTRUCTION_ID_TO_NUMBER[id]
       end
 
+      # The number of bytes the opcode takes up, indexed by instruction number.
       INSTRUCTION_SIZE = [
         1, # nop => 0
         3, # getlocal => 1
@@ -198,6 +203,9 @@ module Mirrors
         1, # putobject_OP_INT2FIX_O_1_C_ => 92
       ]
 
+      # @see id2insn_no
+      # @param [Integer] ins_no instruction number
+      # @return [Integer] width of this instruction in bytes
       def self.insn_no2size(ins_no)
         INSTRUCTION_SIZE[ins_no]
       end

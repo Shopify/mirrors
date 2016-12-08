@@ -3,8 +3,12 @@ require 'mirrors/index/marker'
 
 module Mirrors
   module ISeq
-    # ReferencesVisitor examines opcodes and records references to
-    # classes, methods, and fields
+    # examines opcodes and aggregates references to classes, methods, and
+    # fields.
+    #
+    # @!attribute [r] markers
+    #   @return [Array<Marker>] after {#call}, the class/method/field
+    #     references found in the bytecode.
     class ReferencesVisitor < Visitor
       attr_reader :markers
 
@@ -13,8 +17,11 @@ module Mirrors
         @markers = []
       end
 
-      protected
-
+      # If an instruction represents an access to an ivar, constant, or method
+      # invocation, record it as such in {#markers}. Invoked by {#call}.
+      #
+      # @param [Array<Object>] bytecode a single instruction
+      # @return [nil]
       def visit(bytecode)
         case bytecode.first
         when :getinstancevariable
@@ -24,6 +31,7 @@ module Mirrors
         when :opt_send_without_block
           @markers << method_marker(bytecode[1][:mid])
         end
+        nil
       end
 
       private

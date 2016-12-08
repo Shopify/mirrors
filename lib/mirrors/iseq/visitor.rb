@@ -2,14 +2,17 @@ require 'mirrors/iseq/yasmdata'
 
 module Mirrors
   module ISeq
-    # ISeqVisitor is an abstract class that knows how to walk methods and
-    # call the visit() method for each instruction.  Internally it tracks the
-    # state of the current @pc, @line, and @label during the walk.
+    # Walks bytecode of methods and calls {#visit} for each instruction.
+    # Internally it tracks the state of the current +@pc+, +@line+, and
+    # +@label+ during the walk.
     #
+    # @abstract Subclasses override {#visit}.
     class Visitor
-      attr_reader :iseq, :field_refs, :method_refs, :class_refs
-
-      # visit all the instructions in the supplied method
+      # Walk the given bytecode, invoking {#visit} for each instruction.
+      # @param [RubyVM::InstructionSequence] native_code
+      # @see MethodMirror#native_code
+      # @return [Visitor] +self+. It's the side effects from {#visit} that are
+      #   interesting.
       def call(native_code)
         @iseq = native_code
 
@@ -36,7 +39,9 @@ module Mirrors
         self
       end
 
-      # iterator call once for each opcode
+      # Invoked for each instruction as the bytecode stream is walked.
+      # @abstract
+      # @param [Array<Object>] _bytecode
       def visit(_bytecode)
         raise NotImplementedError, 'subclass responsibility'
       end
@@ -49,7 +54,7 @@ module Mirrors
 
         @pc = 0
         @label = nil
-        @bytecode.each_with_index do |bc|
+        @bytecode.each do |bc|
           case bc
           when Numeric
             @line = bc # bare line number
