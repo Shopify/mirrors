@@ -27,12 +27,12 @@ module Mirrors
 
     # @return [String] The method name
     def selector
-      @subject.name.to_s
+      @reflectee.name.to_s
     end
 
     # @return [ClassMirror] The class this method was originally defined in
     def defining_class
-      Mirrors.reflect @subject.send(:owner)
+      Mirrors.reflect @reflectee.send(:owner)
     end
 
     # Return the value the block argument, if any
@@ -68,7 +68,7 @@ module Mirrors
     #
     # @return [Array<String>]
     def arguments
-      @subject.send(:parameters).map { |_, a| a.to_s }
+      @reflectee.send(:parameters).map { |_, a| a.to_s }
     end
 
     # Is the method :public, :private, or :protected?
@@ -93,7 +93,7 @@ module Mirrors
     end
 
     def super_method
-      owner = @subject.send(:owner)
+      owner = @reflectee.send(:owner)
 
       meth = if owner.is_a?(Class)
         Mirrors
@@ -101,7 +101,7 @@ module Mirrors
           .super_method
           .unbind
       else
-        @subject.bind(owner).super_method.unbind
+        @reflectee.bind(owner).super_method.unbind
       end
 
       meth ? Mirrors.reflect(meth) : nil
@@ -109,21 +109,21 @@ module Mirrors
 
     # @return [String,nil] The source code of this method
     def source
-      @source ||= unindent(@subject.send(:source))
+      @source ||= unindent(@reflectee.send(:source))
     rescue MethodSource::SourceNotFoundError
       nil
     end
 
     # @return [String,nil] The pre-definition comment of this method
     def comment
-      @subject.send(:comment)
+      @reflectee.send(:comment)
     rescue MethodSource::SourceNotFoundError
       nil
     end
 
     # Returns the instruction sequence for the method (cached)
     def iseq
-      @iseq ||= RubyVM::InstructionSequence.of(@subject)
+      @iseq ||= RubyVM::InstructionSequence.of(@reflectee)
     end
 
     # Returns the disassembled code if available.
@@ -146,32 +146,32 @@ module Mirrors
     #
     # @return [RubyVM::InstructionSequence, nil] native code
     def native_code
-      RubyVM::InstructionSequence.of(@subject)
+      RubyVM::InstructionSequence.of(@reflectee)
     end
 
     def name
-      @subject.name
+      @reflectee.name
     end
 
     def references
-      Mirrors::ISeq.references(@subject)
+      Mirrors::ISeq.references(@reflectee)
     end
 
     private
 
     def visibility?(type)
-      list = @subject.send(:owner).send("#{type}_instance_methods")
+      list = @reflectee.send(:owner).send("#{type}_instance_methods")
       list.any? { |m| m.to_s == selector }
     end
 
     def args(type)
       args = []
-      @subject.send(:parameters).select { |t, n| args << n.to_s if t == type }
+      @reflectee.send(:parameters).select { |t, n| args << n.to_s if t == type }
       args
     end
 
     def source_location
-      @subject.send(:source_location)
+      @reflectee.send(:source_location)
     end
 
     def unindent(str)

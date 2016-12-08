@@ -8,24 +8,24 @@ module Mirrors
     end
 
     def name
-      @subject.sub(/.*:/, '')
+      @reflectee.sub(/.*:/, '')
     end
 
     def fullname
-      @subject
+      @reflectee
     end
 
     def children
-      names = PackageInference.contents_of_package(@subject)
+      names = PackageInference.contents_of_package(@reflectee)
       classes = (names || [])
         .map { |n| Object.const_get(n) }
         .select { |c| c.is_a?(Module) }
         .sort_by(&:name)
       class_mirrors = mirrors(classes)
 
-      # .map    { |pkg| pkg.sub(/#{Regexp.quote(@subject)}:.*?:.*/) }
+      # .map    { |pkg| pkg.sub(/#{Regexp.quote(@reflectee)}:.*?:.*/) }
       subpackages = PackageInference.qualified_packages
-        .select { |pkg| pkg.start_with?("#{@subject}:") }
+        .select { |pkg| pkg.start_with?("#{@reflectee}:") }
         .sort
 
       puts subpackages.inspect

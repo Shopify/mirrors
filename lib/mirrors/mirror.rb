@@ -2,63 +2,62 @@ module Mirrors
   # Basic mirror class. Not overtly useful in and of itself, this is primarily
   # a base class for other Mirror types. Look at {ClassMirror}, {MethodMirror},
   # and {ObjectMirror} to get a feel for this.
+  #
+  # @!attribute [r] reflectee
+  #   @return [Object] the actual reflected object
   class Mirror
+    attr_reader :reflectee
+
     # Prefer {Mirrors.reflect}. Wraps the given object in a mirror. More useful
     # also via more specific subclassees.
     def initialize(obj)
-      @subject = obj
+      @reflectee = obj
     end
 
     # @deprecated We shouldn't depend on object IDs in LG. Remove this.
     # @return [String] stringified object_id of the reflectee.
     def subject_id
-      @subject.__id__.to_s
+      @reflectee.__id__.to_s
     end
 
     # Whatever might be considered the 'name' of the object. Best-effort.
     # @return [String]
     def name
-      if subject_is_a?(String)
-        @subject
-      elsif subject_is_a?(Symbol)
+      if reflectee_is_a?(String)
+        @reflectee
+      elsif reflectee_is_a?(Symbol)
         # if you've overridden +Symbol#to_s+, you deserve whatever you get.
-        @subject.to_s
+        @reflectee.to_s
       else
         # +ClassMirror+ overrides this to force +Module#inspect+ to be used,
         # but with some generic object, we can't do much better than
         # whatever the author tells us we have.
-        @subject.inspect
+        @reflectee.inspect
       end
     end
 
-    # Is the given object the same as the subject of this mirror?
-    # @return [true, false]
+    # Is the given object the same as the reflectee of this mirror?
+    # @return [Boolean]
     def mirrors?(other)
-      @subject == other
-    end
-
-    # Accessor to the reflected object
-    # @return [Object]
-    def reflectee
-      @subject
+      @reflectee == other
     end
 
     private
 
-    def subject_is_a?(klass)
-      Mirrors.rebind(Kernel, @subject, :is_a?).call(klass)
+    def reflectee_is_a?(klass)
+      Mirrors.rebind(Kernel, @reflectee, :is_a?).call(klass)
     end
 
-    def subject_instance_variables
-      Mirrors.rebind(Kernel, @subject, :instance_variables).call
+    def reflectee_instance_variables
+      Mirrors.rebind(Kernel, @reflectee, :instance_variables).call
     end
 
-    def subject_class
-      Mirrors.rebind(Kernel, @subject, :class).call
+    def reflectee_class
+      Mirrors.rebind(Kernel, @reflectee, :class).call
     end
 
-    def subject_singleton_class
-      Mirrors.rebind(Kernel, @subject, :singleton_class).call
+    def reflectee_singleton_class
+      Mirrors.rebind(Kernel, @reflectee, :singleton_class).call
     end
 
     def mirrors(list)
