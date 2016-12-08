@@ -32,7 +32,7 @@ class MirrorsTest < MiniTest::Test
     l = Mirrors.implementations_of("unique_reflect_fixture_method")
     assert_equal(Array, l.class)
     assert_equal(1, l.size)
-    assert_equal("unique_reflect_fixture_method", l.first.selector)
+    assert_equal(:unique_reflect_fixture_method, l.first.name)
     assert_equal("ReflectClass", l.first.defining_class.name)
   end
 end

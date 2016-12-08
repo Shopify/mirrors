@@ -25,11 +25,6 @@ module Mirrors
       sl && sl.last ? sl.last - 1 : nil
     end
 
-    # @return [String] The method name
-    def selector
-      @reflectee.name.to_s
-    end
-
     # @return [ClassMirror] The class this method was originally defined in
     def defining_class
       Mirrors.reflect @reflectee.send(:owner)
@@ -161,7 +156,7 @@ module Mirrors
 
     def visibility?(type)
       list = @reflectee.send(:owner).send("#{type}_instance_methods")
-      list.any? { |m| m.to_s == selector }
+      list.any? { |m| m == @reflectee.name }
     end
 
     def args(type)

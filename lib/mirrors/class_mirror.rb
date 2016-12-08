@@ -181,7 +181,7 @@ module Mirrors
     end
 
     # The instance method of this class or any of its superclasses
-    # that has the specified selector
+    # that has the specified name
     #
     # @param [Symbol] name of the method to look up
     # @return [MethodMirror, nil] the method or nil, if none was found
@@ -191,7 +191,7 @@ module Mirrors
     end
 
     # The singleton/static method of this class or any of its superclasses
-    # that has the specified selector
+    # that has the specified name
     #
     # @param [Symbol] name of the method to look up
     # @return [MethodMirror, nil] the method or nil, if none was found

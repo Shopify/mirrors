@@ -14,7 +14,7 @@ module Mirrors
 
       assert_equal(@f.new.source_location[0],      @m.file)
       assert_equal(@f.new.source_location[1] - 2,  @m.line)
-      assert_equal(@f.new.source_location[2],      @m.selector)
+      assert_equal(@f.new.source_location[2],      @m.name.to_s)
       assert_equal(@f.new.source_location[3].name, @m.defining_class.name)
       assert_includes(@m.source, '[__FILE__, __LINE__, __method__.to_s, self.class]')
     end
