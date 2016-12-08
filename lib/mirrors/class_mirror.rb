@@ -17,16 +17,8 @@ module Mirrors
       @method_mirrors = {}
     end
 
-    # What is the primary defining file for this class/module?
-    # This is necessarily best-effort but it will be right in simple cases.
-    #
-    # @return [String, nil] the path on disk to the file, if determinable.
-    def file
-      Mirrors::PackageInference::ClassToFileResolver.new.resolve(self)
-    end
-
-    # @return [true, false] Is this a Class, as opposed to a Module?
-    def is_class # rubocop:disable Style/PredicateName
+    # @return [Boolean] Is this a Class, as opposed to a Module?
+    def class?
       reflectee_is_a?(Class)
     end
 
@@ -37,27 +29,9 @@ module Mirrors
       # TODO(burke)
     end
 
-    # All constants, class vars, and class instance vars.
-    # @return [Array<FieldMirror>]
-    def fields
-      [constants, class_variables, class_instance_variables].flatten
-    end
-
-    # The known class variables.
-    # @return [Array<FieldMirror>]
-    def class_variables
-      field_mirrors(reflectee_send_from_module(:class_variables))
-    end
-
-    # The known class instance variables.
-    # @return [Array<FieldMirror>]
-    def class_instance_variables
-      field_mirrors(reflectee_send_from_module(:instance_variables))
-    end
-
     # The source files this class is defined and/or extended in.
     #
-    # @return [Array<String,File>]
+    # @return [Array<String>]
     def source_files
       locations = reflectee_send_from_module(:instance_methods, false).collect do |name|
         method = reflectee_send_from_module(:instance_method, name)
@@ -67,12 +41,7 @@ module Mirrors
       locations.compact.uniq
     end
 
-    # @return [ClassMirror] The singleton class of this class
-    def singleton_class
-      Mirrors.reflect(reflectee_singleton_class)
-    end
-
-    # @return [true,false] Is the reflectee is a singleton class?
+    # @return [Boolean] Is the reflectee is a singleton class?
     def singleton_class?
       n = name
       # #<Class:0x1234deadbeefcafe> is an anonymous class.
@@ -82,31 +51,12 @@ module Mirrors
       n.match(/^\#<Class:.*>$/) && !n.match(/^\#<Class:0x\h+>$/)
     end
 
-    # @return [true,false] Is this an anonymous class or module?
+    # @return [Boolean] Is this an anonymous class or module?
     def anonymous?
       name.match(/^\#<(Class|Module):0x\h+>$/)
     end
 
-    # @return [Array<ClassMirror>] The mixins included in the ancestors of this
-    #   class.
-    def mixins
-      mirrors(reflectee_send_from_module(:ancestors).reject { |m| m.is_a?(Class) })
-    end
-
-    # @return [ClassMirror] The direct superclass
-    def superclass
-      Mirrors.reflect(reflectee_superclass)
-    end
-
-    # @return [Array<ClassMirror>] The known subclasses
-    def subclasses
-      mirrors(ObjectSpace.each_object(Class).select { |a| a.superclass == @reflectee })
-    end
-
-    # @return [Array<ClassMirror>] The list of ancestors
-    def ancestors
-      mirrors(reflectee_send_from_module(:ancestors))
-    end
+    # @!group Instance Methods: Fields
 
     # The constants defined within this class. This includes nested
     # classes and modules, but also all other kinds of constants.
@@ -133,39 +83,26 @@ module Mirrors
       nil
     end
 
-    # @todo does this actually return +ClassMirror+s?
-    # @return [Array<ClassMirror>] The full module nesting.
-    def nesting
-      ary = []
-      reflectee_send_from_module(:name).split('::').inject(Object) do |klass, str|
-        ary << Mirrors.rebind(Module, klass, :const_get).call(str)
-        ary.last
-      end
-      ary.reverse
-    rescue NameError
-      [@reflectee]
+    # All constants, class vars, and class instance vars.
+    # @return [Array<FieldMirror>]
+    def fields
+      [constants, class_variables, class_instance_variables].flatten
     end
 
-    # @return [Array<ClassMirror>] The classes nested within the reflectee.
-    def nested_classes
-      nc = reflectee_send_from_module(:constants).map do |c|
-        # do not trigger autoloads
-        if reflectee_send_from_module(:const_defined?, c) && !reflectee_send_from_module(:autoload?, c)
-          reflectee_send_from_module(:const_get, c)
-        end
-      end
-
-      consts = nc.compact.select do |c|
-        Mirrors.rebind(Kernel, c, :is_a?).call(Module)
-      end
-
-      mirrors(consts.sort_by { |c| Mirrors.rebind(Module, c, :name).call })
+    # The known class variables.
+    # @return [Array<FieldMirror>]
+    def class_variables
+      field_mirrors(reflectee_send_from_module(:class_variables))
     end
 
-    # @deprecated this is dumb, just calculate it in LG.
-    def nested_class_count
-      nested_classes.count
+    # The known class instance variables.
+    # @return [Array<FieldMirror>]
+    def class_instance_variables
+      field_mirrors(reflectee_send_from_module(:instance_variables))
     end
+
+    # @!endgroup (Fields)
+    # @!group Instance Methods: Methods
 
     # @return [Array<MethodMirror>] The instance methods of this class.
     def class_methods
@@ -206,6 +143,80 @@ module Mirrors
     undef methods
     alias_method :__method, :method
     undef method
+
+    # @!endgroup (Methods)
+
+    # @!group Instance Methods: Related Classes
+
+    # @return [Array<ClassMirror>] The mixins included in the ancestors of this
+    #   class.
+    def mixins
+      mirrors(reflectee_send_from_module(:ancestors).reject { |m| m.is_a?(Class) })
+    end
+
+    # @todo does this actually return +ClassMirror+s?
+    # @return [Array<ClassMirror>] The full module nesting.
+    def nesting
+      ary = []
+      reflectee_send_from_module(:name).split('::').inject(Object) do |klass, str|
+        ary << Mirrors.rebind(Module, klass, :const_get).call(str)
+        ary.last
+      end
+      ary.reverse
+    rescue NameError
+      [@reflectee]
+    end
+
+    # @return [Array<ClassMirror>] The classes nested within the reflectee.
+    def nested_classes
+      nc = reflectee_send_from_module(:constants).map do |c|
+        # do not trigger autoloads
+        if reflectee_send_from_module(:const_defined?, c) && !reflectee_send_from_module(:autoload?, c)
+          reflectee_send_from_module(:const_get, c)
+        end
+      end
+
+      consts = nc.compact.select do |c|
+        Mirrors.rebind(Kernel, c, :is_a?).call(Module)
+      end
+
+      mirrors(consts.sort_by { |c| Mirrors.rebind(Module, c, :name).call })
+    end
+
+    # @deprecated this is dumb, just calculate it in LG.
+    def nested_class_count
+      nested_classes.count
+    end
+
+    # @return [ClassMirror] The singleton class of this class
+    def singleton_class
+      Mirrors.reflect(reflectee_singleton_class)
+    end
+
+    # @return [ClassMirror] The direct superclass
+    def superclass
+      Mirrors.reflect(reflectee_superclass)
+    end
+
+    # @return [Array<ClassMirror>] The known subclasses
+    def subclasses
+      mirrors(ObjectSpace.each_object(Class).select { |a| a.superclass == @reflectee })
+    end
+
+    # @return [Array<ClassMirror>] The list of ancestors
+    def ancestors
+      mirrors(reflectee_send_from_module(:ancestors))
+    end
+
+    # @!endgroup (Related Classes)
+
+    # What is the primary defining file for this class/module?
+    # This is necessarily best-effort but it will be right in simple cases.
+    #
+    # @return [String, nil] the path on disk to the file, if determinable.
+    def file
+      Mirrors::PackageInference::ClassToFileResolver.new.resolve(self)
+    end
 
     # @example
     #   Mirrors.reflect(A::B).name #=> "A::B"

@@ -1,12 +1,43 @@
+require 'set'
+
 module Mirrors
   module PackageInference
+    # Resolves a Class ({ClassMirror}) to a path on disk using various
+    # heuristics.
+    #
+    # Our preferred path is to use the data recorded by the +TracePoint+
+    # registered by {Mirrors::Init}, if it was +required+ early enough to
+    # capture data on the provided class, but we have some fallback heuristics
+    # too.
     class ClassToFileResolver
       def initialize
         @files = {}
       end
 
-      # @param [ClassMirror] cm
-      # @return [String, nil]
+      # Attempt to resolve a {ClassMirror} to a single path on disk which
+      # corresponds to its primary definition site.
+      #
+      # The +TracePoint+ registered in {Init} captures the filename each time a
+      # class is opened. If this class was only opened once, we can simply
+      # return that filepath.
+      #
+      # If it wasn't registered by {Init::CLASS_DEFINITION_TRACEPOINT} or if it
+      # was opened more than once, we find the source file for each instance
+      # and class method defined on the module, and look for text in that file
+      # that looks like +class FooBar+ -- e.g. explicitly opening the class.
+      # This is because many libraries will add instance methods to an argument
+      # using dynamic APIs (e.g. +target.define_method(...)+)
+      #
+      # Failing that strategy, we choose whichever file contained the most
+      # instance or class methods for this module.
+      #
+      # If we weren't able to determine a source location for any methods, and
+      # didn't track class creation (as may be the case for some core classes
+      # or C extensions), we simply return +nil+.
+      #
+      # @param [ClassMirror] cm the {ClassMirror} for which to determine a
+      #   filename.
+      # @return [String,nil] the path on disk to the defining file
       def resolve(cm)
         name = cm.name
         dname = cm.demodulized_name
@@ -27,13 +58,16 @@ module Mirrors
       end
 
       def try_fast(cm, demodulized_name)
+        done = Set.new
         cm.instance_methods.each do |mm|
           file = mm.file
           next unless file
+          next if done.include?(file)
 
           contents = (@files[file] ||= File.open(file, 'r') { |f| f.readpartial(4096) })
           pat = /^\s+(class|module) ([\S]+::)?#{Regexp.quote(demodulized_name)}\s/
           return file if contents =~ pat
+          done << file
         end
         nil
       end

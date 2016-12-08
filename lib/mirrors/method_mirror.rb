@@ -13,21 +13,19 @@ module Mirrors
   # objects, but also to their static representations (bytecode, source, ...),
   # their debugging information and statistical information
   class MethodMirror < Mirror
-    # @return [String, nil] The filename, if available
-    def file
-      sl = source_location
-      sl ? sl.first : nil
-    end
-
-    # @return [Fixnum, nil] The source line, if available
-    def line
-      sl = source_location
-      sl && sl.last ? sl.last - 1 : nil
-    end
-
     # @return [ClassMirror] The class this method was originally defined in
     def defining_class
-      Mirrors.reflect @reflectee.send(:owner)
+      Mirrors.reflect(@reflectee.owner)
+    end
+
+    # @!group Instance Methods: Arguments
+
+    # Queries the method for it's arguments and returns a list of
+    # mirrors that hold name and value information.
+    #
+    # @return [Array<String>]
+    def arguments
+      @reflectee.parameters.map { |_, a| a.to_s }
     end
 
     # Return the value the block argument, if any
@@ -46,7 +44,7 @@ module Mirrors
 
     # Returns names and values of the optional arguments.
     #
-    # @return [Array<String>, nil]
+    # @return [Array<String>]
     def optional_arguments
       args(:opt)
     end
@@ -58,37 +56,95 @@ module Mirrors
       args(:req)
     end
 
-    # Queries the method for it's arguments and returns a list of
-    # mirrors that hold name and value information.
-    #
-    # @return [Array<String>]
-    def arguments
-      @reflectee.send(:parameters).map { |_, a| a.to_s }
-    end
+    # @!endgroup
+    # @!group Instance Methods: Visibility
 
-    # Is the method :public, :private, or :protected?
-    #
-    # @return [String]
+    # Is the method +:public+, +:private+, or +:protected+?
+    # @return [:public, :private, :protected]
     def visibility
       return :public  if visibility?(:public)
       return :private if visibility?(:private)
       :protected
     end
 
+    # @return [Boolean] Is this a protected method?
     def protected?
       visibility?(:protected)
     end
 
+    # @return [Boolean] Is this a public method?
     def public?
       visibility?(:public)
     end
 
+    # @return [Boolean] Is this a private method?
     def private?
       visibility?(:private)
     end
 
+    # @!endgroup
+    # @!group Instance Methods: Source
+
+    # @return [String,nil] The source code of this method, if available.
+    def source
+      @source ||= unindent(@reflectee.source)
+    rescue MethodSource::SourceNotFoundError
+      nil
+    end
+
+    # @return [String,nil] The pre-definition comment of this method, if available.
+    def comment
+      @reflectee.comment
+    rescue MethodSource::SourceNotFoundError
+      nil
+    end
+
+    # @see #native_code
+    # @return [String,nil] the human-readable bytecode disassembly, if available.
+    def bytecode
+      @bytecode ||= iseq.disasm if iseq
+      @bytecode
+    end
+
+    # @todo this changed; update consumers to `#pretty_inspect` the result.
+    # @return [String, nil] parse tree, if available.
+    def sexp
+      src = source
+      src ? Ripper.sexp(src) : nil
+    end
+
+    # @see #bytecode
+    # @return [RubyVM::InstructionSequence, nil] native code, if available
+    def native_code
+      @native_code ||= RubyVM::InstructionSequence.of(@reflectee)
+    end
+
+    # @return [String, nil] The filename, if available
+    def file
+      sl = source_location
+      sl ? sl.first : nil
+    end
+
+    # @return [Fixnum, nil] The source line, if available
+    def line
+      sl = source_location
+      sl && sl.last ? sl.last - 1 : nil
+    end
+
+    # @!endgroup
+
+    # @return [Array<Marker>,nil] list of all methods invoked in the method
+    #   body.
+    def references
+      Mirrors::ISeq.references(@reflectee)
+    end
+
+    # @todo We could add another method to determine whether this method
+    #   shadows a super method by checking whether there is a super method, then
+    #   asserting that {#references} includes +#super+.
+    # @return [MethodMirror,nil] Parent class/included method of the same name.
     def super_method
-      owner = @reflectee.send(:owner)
+      owner = @reflectee.owner
 
       meth = if owner.is_a?(Class)
         Mirrors
@@ -102,71 +158,26 @@ module Mirrors
       meth ? Mirrors.reflect(meth) : nil
     end
 
-    # @return [String,nil] The source code of this method
-    def source
-      @source ||= unindent(@reflectee.send(:source))
-    rescue MethodSource::SourceNotFoundError
-      nil
-    end
-
-    # @return [String,nil] The pre-definition comment of this method
-    def comment
-      @reflectee.send(:comment)
-    rescue MethodSource::SourceNotFoundError
-      nil
-    end
-
-    # Returns the instruction sequence for the method (cached)
-    def iseq
-      @iseq ||= RubyVM::InstructionSequence.of(@reflectee)
-    end
-
-    # Returns the disassembled code if available.
-    #
-    # @return [String, nil] human-readable bytedcode dump
-    def bytecode
-      @bytecode ||= iseq.disasm if iseq
-      @bytecode
-    end
-
-    # Returns the parse tree if available
-    #
-    # @return [String, nil] prettified AST
-    def sexp
-      src = source
-      src ? Ripper.sexp(src).pretty_inspect : nil
-    end
-
-    # Returns the compiled code if available.
-    #
-    # @return [RubyVM::InstructionSequence, nil] native code
-    def native_code
-      RubyVM::InstructionSequence.of(@reflectee)
-    end
-
+    # @return [Symbol] name of the method
     def name
       @reflectee.name
-    end
-
-    def references
-      Mirrors::ISeq.references(@reflectee)
     end
 
     private
 
     def visibility?(type)
-      list = @reflectee.send(:owner).send("#{type}_instance_methods")
+      list = @reflectee.owner.send("#{type}_instance_methods")
       list.any? { |m| m == @reflectee.name }
     end
 
     def args(type)
       args = []
-      @reflectee.send(:parameters).select { |t, n| args << n.to_s if t == type }
+      @reflectee.parameters.select { |t, n| args << n.to_s if t == type }
       args
     end
 
     def source_location
-      @reflectee.send(:source_location)
+      @reflectee.source_location
     end
 
     def unindent(str)
