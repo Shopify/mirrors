@@ -162,13 +162,12 @@ module Mirrors
       mirrors(consts.sort_by { |c| Mirrors.rebind(Module, c, :name).call })
     end
 
+    # @deprecated this is dumb, just calculate it in LG.
     def nested_class_count
       nested_classes.count
     end
 
-    # The instance methods of this class.
-    #
-    # @return [Array<MethodMirror>]
+    # @return [Array<MethodMirror>] The instance methods of this class.
     def class_methods
       mirrors(all_instance_methods(subject_singleton_class))
     end
@@ -208,20 +207,38 @@ module Mirrors
     alias_method :__method, :method
     undef method
 
-    # @return [String]
+    # @example
+    #   Mirrors.reflect(A::B).name #=> "A::B"
+    #   Mirrors.reflect(Module.new).name #=> "#<Module:0x007fd22902d9d0>"
+    # @return [String] the default +#inspect+ of this class
     def name
       # +name+ itself is blank for anonymous/singleton classes
       subject_send_from_module(:inspect)
     end
 
+    # @return [String] the last component in the module nesting of the name.
+    # @example
+    #   Mirrors.reflect(A::B::C).demodulized_name #=> "C"
     def demodulized_name
       name.split('::').last
     end
 
+    # Cache a {MethodMirror} related to this {ClassMirror} in order to prevent
+    # generating garbage each time methods are returned. Idempotent.
+    #
+    # @param [MethodMirror] the mirror to be interned
+    # @return [MethodMirror] the interned mirror. If already interned, the
+    #   previous version.
     def intern_method_mirror(mirror)
       @method_mirrors[mirror.name] ||= mirror
     end
 
+    # Cache a {FieldMirror} related to this {ClassMirror} in order to prevent
+    # generating garbage each time fields are returned. Idempotent.
+    #
+    # @param [FieldMirror] the mirror to be interned
+    # @return [FieldMirror] the interned mirror. If already interned, the
+    #   previous version.
     def intern_field_mirror(mirror)
       @field_mirrors[mirror.name] ||= mirror
     end

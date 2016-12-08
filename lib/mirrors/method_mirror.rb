@@ -4,16 +4,14 @@ require 'ripper'
 require 'mirrors/iseq/references_visitor'
 
 module Mirrors
-  # A MethodMirror should reflect on methods, but in a more general
-  # sense than the Method and UnboundMethod classes in Ruby are able
-  # to offer.
+  # A MethodMirror should reflect on methods, but in a more general sense than
+  # the Method and UnboundMethod classes in Ruby are able to offer.
   #
-  # In actual execution, a method is pretty much every chunk of code,
-  # even loading a file triggers a process not unlike compiling a
-  # method (if only for the side-effects). Method mirrors should allow
-  # access to the runtime objects, but also to their static
-  # representations (bytecode, source, ...), their debugging
-  # information and statistical information
+  # In actual execution, a method is pretty much every chunk of code, even
+  # loading a file triggers a process not unlike compiling a method (if only
+  # for the side-effects). Method mirrors should allow access to the runtime
+  # objects, but also to their static representations (bytecode, source, ...),
+  # their debugging information and statistical information
   class MethodMirror < Mirror
     # @return [String, nil] The filename, if available
     def file
