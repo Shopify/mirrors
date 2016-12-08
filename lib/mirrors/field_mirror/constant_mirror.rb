@@ -14,7 +14,7 @@ module Mirrors
     def public?
       # +constants(true)+ doesn't return private constants. We could get at
       # them with +constants(false)+.
-      @object.constants(true).include?(@name)
+      @object.constants(true).include?(@name.to_sym)
     end
 
     # @return [false] constants are never protected.
@@ -25,7 +25,7 @@ module Mirrors
     # @return [Boolean] Is this a private constant (was it tagged with
     #   +private_constant+)?
     def private?
-      !@object.constants(true).include?(@name)
+      !@object.constants(true).include?(@name.to_sym)
     end
   end
 end
