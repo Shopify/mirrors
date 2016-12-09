@@ -4,6 +4,7 @@ require 'mirrors/package'
 require 'mirrors/object_mirror'
 require 'mirrors/class_mirror'
 require 'mirrors/field_mirror'
+require 'mirrors/file_mirror'
 require 'mirrors/method_mirror'
 require 'mirrors/package_mirror'
 require 'mirrors/package_inference'
@@ -14,6 +15,7 @@ require 'mirrors/iseq'
 # @todo more words here
 module Mirrors
   @class_mirrors = {}
+  @file_mirrors = {}
   @package_mirrors = {}
   @constant_mirrors = {}
   @watches = {}
@@ -59,6 +61,12 @@ module Mirrors
       @unbound_methods[owner] ||= {}
       meth = (@unbound_methods[owner][msg] ||= owner.instance_method(msg))
       meth.bind(receiver)
+    end
+
+    def files
+      $LOADED_FEATURES
+        .select { |feat| feat =~ %r{^/} }
+        .map { |feat| Mirrors.reflect(FileMirror::File.new(feat)) }
     end
 
     # Generate PackageMirrors representing all the "packages" in the system.
@@ -164,6 +172,7 @@ module Mirrors
 
     REFLECTORS = Hash.new(:reflect_object).merge(
       FieldMirror::Field => :reflect_field,
+      FileMirror::File   => :reflect_file,
       Symbol             => :reflect_field,
       Method             => :reflect_method,
       UnboundMethod      => :reflect_method,
@@ -190,6 +199,11 @@ module Mirrors
       # It can also be an ObjectMirror, which doesn't intern.
       return mirror unless owner.is_a?(ClassMirror)
       owner.intern_field_mirror(mirror)
+    end
+
+    def reflect_file(obj)
+      mirror = FileMirror.new(obj)
+      @file_mirrors[mirror.name] ||= mirror
     end
 
     def reflect_method(obj)

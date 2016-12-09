@@ -31,6 +31,8 @@ module Mirrors
           @markers << class_marker(bytecode.last)
         when :opt_send_without_block
           @markers << method_marker(bytecode[1][:mid])
+        when :defineclass
+          @markers.concat(markers_from_block(bytecode[2]))
         when :send
           @markers << method_marker(bytecode[1][:mid])
           if (bytecode[1][:flag] & FLAG_ARGS_BLOCKARG) > 0

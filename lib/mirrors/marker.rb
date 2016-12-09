@@ -6,8 +6,6 @@ module Mirrors
   #   @return [String] descriptive text explaining the marker; varies by {type}
   # @!attribute [r] type
   #   @return [Symbol] one of the +Marker::TYPE_*+ constants
-  # @!attribute [r] file
-  #   @return [String,nil] file to which the marker points, if any
   # @!attribute [r] line
   #   @return [Integer] line to which the marker points; -1 indicating none.
   # @!attribute [r] start_column
@@ -17,7 +15,7 @@ module Mirrors
   #   @return [Integer] end column index to which the marker points; -1
   #     indicating none.
   class Marker
-    attr_reader :message, :type, :file, :line, :start_column, :end_column
+    attr_reader :message, :type, :line, :start_column, :end_column
 
     # for later use
     # TYPE_TASK    = :'mirrors.marker.task'
@@ -64,6 +62,10 @@ module Mirrors
       @line = line
       @start_column = start_column
       @end_column = end_column
+    end
+
+    def file
+      @file ? Mirrors.reflect(FileMirror::File.new(@file)) : nil
     end
 
     # @return [String] human-friendly file:line indicator. useful for printing

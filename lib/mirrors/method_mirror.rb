@@ -134,7 +134,7 @@ module Mirrors
     # @return [String, nil] The filename, if available
     def file
       sl = source_location
-      sl ? sl.first : nil
+      sl ? Mirrors.reflect(FileMirror::File.new(sl.first)) : nil
     end
 
     # @return [Fixnum, nil] The source line, if available

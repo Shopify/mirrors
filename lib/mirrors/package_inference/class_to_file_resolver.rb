@@ -60,8 +60,9 @@ module Mirrors
       def try_fast(cm, demodulized_name)
         done = Set.new
         cm.instance_methods.each do |mm|
-          file = mm.file
+          file = mm.file # FileMirror
           next unless file
+          file = file.path # String
           next if done.include?(file)
 
           contents = begin

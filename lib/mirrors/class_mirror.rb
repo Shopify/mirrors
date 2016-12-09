@@ -213,7 +213,8 @@ module Mirrors
     #
     # @return [String, nil] the path on disk to the file, if determinable.
     def file(resolver = PackageInference::ClassToFileResolver.new)
-      resolver.resolve(self)
+      f = resolver.resolve(self)
+      f ? Mirrors.reflect(FileMirror::File.new(f)) : nil
     end
 
     # @example
