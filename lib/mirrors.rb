@@ -159,35 +159,42 @@ module Mirrors
       UnboundMethod      => :reflect_method,
       Class              => :reflect_class,
       Module             => :reflect_class,
-      Mirrors::Package   => :reflect_package, # TODO: move to PackageMirror::Package
+      Mirrors::Package   => :reflect_package,
     ).freeze
     private_constant :REFLECTORS
 
     private
 
     def reflect_field(obj)
-      case obj.name.to_s
+      mirror = case obj.name.to_s
       when /^@@/
-        intern_field_mirror(ClassVariableMirror.new(obj))
+        ClassVariableMirror.new(obj)
       when /^@/
         # instance variables not interned as they are not guaranteed to be
         # present in all instances
         InstanceVariableMirror.new(obj)
       else
-        intern_field_mirror(ConstantMirror.new(obj))
+        ConstantMirror.new(obj)
       end
+      owner = mirror.owner
+      # It can also be an ObjectMirror, which doesn't intern.
+      return mirror unless owner.is_a?(ClassMirror)
+      owner.intern_field_mirror(mirror)
     end
 
     def reflect_method(obj)
-      intern_method_mirror(MethodMirror.new(obj))
+      mirror = MethodMirror.new(obj)
+      mirror.defining_class.intern_method_mirror(mirror)
     end
 
     def reflect_class(obj)
-      intern_class_mirror(ClassMirror.new(obj))
+      mirror = ClassMirror.new(obj)
+      @class_mirrors[mirror.name] ||= mirror
     end
 
     def reflect_package(obj)
-      intern_package_mirror(PackageMirror.new(obj))
+      mirror = PackageMirror.new(obj)
+      @package_mirrors[mirror.name] ||= mirror
     end
 
     def reflect_object(obj)
@@ -202,25 +209,6 @@ module Mirrors
     # find the class name of obj
     def basic_class_name(klass)
       Mirrors.rebind(Module, klass, :name).call
-    end
-
-    def intern_class_mirror(mirror)
-      @class_mirrors[mirror.name] ||= mirror
-    end
-
-    def intern_method_mirror(mirror)
-      mirror.defining_class.intern_method_mirror(mirror)
-    end
-
-    def intern_field_mirror(mirror)
-      mir = mirror.owner
-      # It can also be an ObjectMirror, which doesn't intern.
-      return mir unless mir.is_a?(ClassMirror)
-      mirror.owner.intern_field_mirror(mirror)
-    end
-
-    def intern_package_mirror(mirror)
-      @package_mirrors[mirror.name] ||= mirror
     end
 
     def mirrors(list)
