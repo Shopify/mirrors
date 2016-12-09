@@ -1,5 +1,4 @@
 require 'mirrors/iseq/references_visitor'
-require 'mirrors/iseq/disasm_visitor'
 
 module Mirrors
   # Tools for walking the bytecode of a method and extracting useful

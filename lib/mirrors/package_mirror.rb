@@ -38,20 +38,14 @@ module Mirrors
     # @return [Array<PackageMirror>] subpackages
     def children
       subpackages = PackageInference.qualified_packages
-        .select { |pkg| pkg.start_with?("#{@reflectee.name}:") }
-        .sort
-      mirrors(subpackages)
+        .select { |pkg| pkg.name.start_with?("#{@reflectee.name}:") }
+      mirrors(subpackages).sort_by(&:qualified_name)
     end
 
     # @see children
     # @return [Array<ClassMirror>] classes/modules belonging to this package
     def contents
-      names = PackageInference.contents_of_package(@reflectee)
-      classes = (names || [])
-        .map { |n| Object.const_get(n) }
-        .select { |c| c.is_a?(Module) }
-        .sort_by(&:name)
-      mirrors(classes)
+      PackageInference.contents_of_package(@reflectee)
     end
 
     # @example

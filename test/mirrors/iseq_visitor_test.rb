@@ -1,5 +1,4 @@
 require 'test_helper'
-require 'mirrors/iseq/disasm_visitor'
 
 module Mirrors
   class ISeqVisitorTest < MiniTest::Test
