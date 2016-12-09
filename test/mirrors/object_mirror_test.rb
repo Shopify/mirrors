@@ -8,6 +8,10 @@ module Mirrors
       super
     end
 
+    def test_reflectee_class
+      assert_equal(Mirrors.reflect(String), Mirrors.reflect('lol').reflectee_class)
+    end
+
     def test_variables
       vars = @m.variables
       assert_equal(["@ivar"], vars.map(&:name))

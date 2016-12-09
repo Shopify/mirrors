@@ -17,14 +17,5 @@ module Mirrors
       visitor.call(iseq)
       visitor.markers
     end
-
-    # @param [Method,UnboundMethod] iseqable method for walk
-    # @return [nil]
-    def self.disasm(iseqable)
-      iseq = RubyVM::InstructionSequence.of(iseqable)
-      visitor = DisasmVisitor.new
-      visitor.call(iseq)
-      nil
-    end
   end
 end

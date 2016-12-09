@@ -81,7 +81,7 @@ module Mirrors
         puts @iseq.disasm
         puts '---------------- bytecode ------------------'
         @bytecode.each { |c| puts c.inspect }
-        raise "Urecognized bytecode:#{bc} at index:#{@pc}"
+        raise "Unrecognized bytecode:#{bc} at index:#{@pc}"
       end
     end
   end
