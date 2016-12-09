@@ -66,6 +66,12 @@ module Mirrors
       @end_column = end_column
     end
 
+    # @return [String] human-friendly file:line indicator. useful for printing
+    #   locations of a set of markers.
+    def location
+      "#{@file || "(unknown)"}:#{@line}"
+    end
+
     # @!visibility private
     def ==(other)
       type == other.type && \
