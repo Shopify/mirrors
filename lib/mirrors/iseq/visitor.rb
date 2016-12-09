@@ -57,31 +57,16 @@ module Mirrors
         @bytecode.each do |bc|
           case bc
           when Numeric
-            @line = bc # bare line number
-            next # line numbers are not executable
+            @line = bc
           when Symbol
             @label = bc
-            next # labels are not executable
-          when Array
+          when Array # an actual instruction
             @opcode = YASMData.id2insn_no(bc.first)
             unrecognized_bytecode(bc) unless @opcode
             visit(bc)
             @pc += YASMData.insn_no2size(@opcode)
-          else
-            unrecognized_bytecode(bc)
           end
         end
-      end
-
-      # emit diagnostics and signal that an unrecognized opcode was encountered
-      def unrecognized_bytecode(bc)
-        puts '-----------------bytecode ---------------------'
-        puts "bytecode=#{bc}  class=#{bc.class}"
-        puts '---------------- disassembly ------------------'
-        puts @iseq.disasm
-        puts '---------------- bytecode ------------------'
-        @bytecode.each { |c| puts c.inspect }
-        raise "Unrecognized bytecode:#{bc} at index:#{@pc}"
       end
     end
   end
