@@ -31,7 +31,6 @@ module Mirrors
         when :opt_send_without_block
           @markers << method_marker(bytecode[1][:mid])
         when :send
-          # TODO(burke): test this
           @markers << method_marker(bytecode[1][:mid])
           @markers.concat(markers_from_block(bytecode[3]))
         end
