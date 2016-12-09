@@ -65,15 +65,7 @@ module Mirrors
     #
     # @return [Array<PackageMirror>]
     def packages
-      packages = {}
-      # Object is the top-level.
-      Object.constants.each do |const|
-        pkg = PackageInference.infer_from_toplevel(const)
-        packages[pkg] = true
-      end
-      mirrors(packages.keys)
-      # toplevel_packages = packages.keys.map { |pkg| pkg.sub(/:.*/, '') }.sort
-      # package_mirrors(toplevel_packages)
+      modules.map(&:package).uniq!
     end
 
     # List all known modules.

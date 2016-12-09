@@ -25,7 +25,7 @@ module Mirrors
     # @return [PackageMirror] the "package" into which this class/module has
     #   been sorted.
     def package
-      @package ||= Mirrors.reflect(PackageInference.infer_from(@reflectee))
+      @package ||= PackageInference.infer_from(self)
     end
 
     # The source files this class is defined and/or extended in.
@@ -212,8 +212,8 @@ module Mirrors
     # This is necessarily best-effort but it will be right in simple cases.
     #
     # @return [String, nil] the path on disk to the file, if determinable.
-    def file
-      Mirrors::PackageInference::ClassToFileResolver.new.resolve(self)
+    def file(resolver = PackageInference::ClassToFileResolver.new)
+      resolver.resolve(self)
     end
 
     # @example

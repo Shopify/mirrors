@@ -18,31 +18,29 @@ module Mirrors
     class << self
       # Determines a package name for the given module.
       #
-      # @todo this should probably take a {ClassMirror}, not a +Module+
-      # @param [Module] mod the +Class+ or +Module+ for which to determine the package.
+      # @param [ClassMirror] mod the class/module for which to determine the package.
       # @param [ClassToFileResolver] resolver caches some data internally, so if you're
       #   going to call +infer_from+ many times, it's useful to provide one.
-      # @return [Package] The package of the given module
+      # @return [PackageMirror] The package of the given module
       def infer_from(mod, resolver = ClassToFileResolver.new)
-        insp = Mirrors.rebind(Module, mod, :inspect).call
-        infer_from_key(insp, resolver)
-      end
+        @inference_cache ||= {}
+        @inverse_cache ||= {}
 
-      # Determines a package name for the toplevel constant name.
-      #
-      # @todo does this really need to be separate? Should we just instantiate
-      #   the constant and use {.infer_from}?
-      # @param [Symbol] sym The name of the toplevel constant to use.
-      # @param [ClassToFileResolver] resolver caches some data internally, so if you're
-      #   going to call +infer_from+ many times, it's useful to provide one.
-      # @return [Package] The package of the given constant.
-      def infer_from_toplevel(sym, resolver = ClassToFileResolver.new)
-        infer_from_key(sym.to_s, resolver)
+        key = mod.name
+
+        cached = @inference_cache[key]
+        return cached if cached
+
+        pkg = uncached_infer_from(mod, [], resolver)
+        @inference_cache[key] = pkg
+        @inverse_cache[pkg.name] ||= []
+        @inverse_cache[pkg.name] << mod
+
+        Mirrors.reflect(pkg)
       end
 
       # @param [String] pkg the name of the package to look up
-      # @return [Array<String>] All the items sorted into +pkg+ so far.
-      #   An array of package {ClassMirror#name}s.
+      # @return [Array<ClassMirror>] All the items sorted into +pkg+ so far.
       def contents_of_package(pkg)
         (@inverse_cache || {})[pkg.name]
       end
@@ -54,21 +52,6 @@ module Mirrors
       end
 
       private
-
-      def infer_from_key(key, resolver)
-        @inference_cache ||= {}
-        @inverse_cache ||= {}
-
-        cached = @inference_cache[key]
-        return cached if cached
-
-        pkg = uncached_infer_from(key, [], resolver)
-        @inference_cache[key] = pkg
-        @inverse_cache[pkg.name] ||= []
-        @inverse_cache[pkg.name] << key
-
-        pkg
-      end
 
       # ruby --disable-gems -e 'puts Object.constants'
       CORE = Set.new(%w(
@@ -97,13 +80,13 @@ module Mirrors
       UNKNOWN_EVAL_PACKAGE = Package.new('unknown:eval'.freeze)
       GEM_PACKAGE_PREFIX   = 'gems:'.freeze
 
-      def uncached_infer_from(key, exclusions, resolver)
-        return CORE_PACKAGE if CORE.include?(nesting_first(key))
+      def uncached_infer_from(mod, exclusions, resolver)
+        return CORE_PACKAGE if CORE.include?(nesting_first(mod.name))
 
-        filename = determine_filename(key, resolver)
+        filename = mod.file(resolver)
 
         if filename.nil?
-          return try_harder(key, exclusions, resolver)
+          return try_harder(mod, exclusions, resolver)
         end
 
         return APPLICATION_PACKAGE if filename.start_with?(Mirrors.project_root)
@@ -149,26 +132,12 @@ module Mirrors
         nil
       end
 
-      def determine_filename(key, resolver)
-        raw = Object.const_get(key)
-        return nil unless raw.is_a?(Module)
+      def try_harder(mod, exclusions, resolver)
+        exclusions << mod
 
-        resolver.resolve(Mirrors.reflect(raw))
-      end
-
-      def try_harder(key, exclusions, resolver)
-        obj = Object.const_get(key)
-        return UNKNOWN_PACKAGE unless obj.is_a?(Module)
-        exclusions << obj
-
-        obj.constants.each do |const|
-          child = obj.const_get(const)
-          next unless child.is_a?(Module)
-
+        mod.nested_classes.each do |child|
           next if exclusions.include?(child)
-
-          insp = Mirrors.rebind(Module, child, :inspect).call
-          pkg = uncached_infer_from(insp, exclusions, resolver)
+          pkg = uncached_infer_from(child, exclusions, resolver)
           return pkg unless pkg == UNKNOWN_PACKAGE
         end
 
