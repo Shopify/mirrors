@@ -22,10 +22,10 @@ module Mirrors
       reflectee_is_a?(Class)
     end
 
-    # @todo not yet implemented
     # @return [PackageMirror] the "package" into which this class/module has
     #   been sorted.
     def package
+      @package ||= Mirrors.reflect(PackageInference.infer_from(@reflectee))
     end
 
     # The source files this class is defined and/or extended in.

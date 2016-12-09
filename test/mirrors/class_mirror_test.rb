@@ -108,6 +108,11 @@ module Mirrors
       refute(named_c_sc.anonymous?)
     end
 
+    def test_package
+      assert_equal('application', @m.package.name)
+      assert_equal('core', Mirrors.reflect(Object).package.name)
+    end
+
     def test_superclass
       assert_equal(ClassFixture.superclass.name, @m.superclass.name)
     end
