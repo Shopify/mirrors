@@ -13,6 +13,23 @@ class MirrorsTest < MiniTest::Test
     assert_includes(classes, "ReflectClass")
   end
 
+  def test_files
+    assert_includes(Mirrors.files, Mirrors.reflect(Mirrors::FileMirror::File.new(__FILE__)))
+  end
+
+  def test_senders_of
+    self.this_is_a_weird_hack = __LINE__
+    marks = Mirrors.senders_of(:this_is_a_weird_hack=)
+    assert_equal([
+      Mirrors::Marker.new(
+        type: Mirrors::Marker::TYPE_METHOD_REFERENCE,
+        message: :this_is_a_weird_hack=,
+        file: __FILE__,
+        line: @line
+      )
+    ], marks)
+  end
+
   def test_instances_of
     klass1 = Class.new
     klass2 = Class.new(klass1)
@@ -41,5 +58,11 @@ class MirrorsTest < MiniTest::Test
     assert_equal(1, l.size)
     assert_equal(:unique_reflect_fixture_method, l.first.name)
     assert_equal("ReflectClass", l.first.defining_class.name)
+  end
+
+  private
+
+  def this_is_a_weird_hack=(line)
+    @line = line
   end
 end

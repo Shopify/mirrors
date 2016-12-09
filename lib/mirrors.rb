@@ -145,24 +145,6 @@ module Mirrors
       mirrors(methods.select { |m| m.name.to_s == message.to_s })
     end
 
-    # Find all methods which send the given message to any object (i.e. call
-    # the named method).
-    #
-    # @param [Symbol] msg method name to search for
-    # @return [Hash<MethodMirror,Array<Marker>>]
-    def references_to(msg)
-      filtered = {}
-      ObjectSpace.each_object(Module).each do |mod|
-        cm = reflect(mod)
-
-        (cm.instance_methods + cm.class_methods).each do |m|
-          refs = m.references.select { |marker| marker.message == msg }
-          filtered[m] = refs unless refs.empty?
-        end
-      end
-      filtered
-    end
-
     # Create a mirror for a given object in the system under
     # observation. This is *the* factory method for all mirror
     # instances, interning and cache invalidation will be added here.
