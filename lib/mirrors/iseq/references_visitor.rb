@@ -15,6 +15,7 @@ module Mirrors
       def initialize
         super
         @markers = []
+        @last = []
       end
 
       # If an instruction represents an access to an ivar, constant, or method
@@ -32,12 +33,21 @@ module Mirrors
           @markers << method_marker(bytecode[1][:mid])
         when :send
           @markers << method_marker(bytecode[1][:mid])
-          @markers.concat(markers_from_block(bytecode[3]))
+          if (bytecode[1][:flag] & FLAG_ARGS_BLOCKARG) > 0
+            if @last[0] == :putobject && @last[1].is_a?(Symbol)
+              @markers << method_marker(@last[1])
+            end
+          else
+            @markers.concat(markers_from_block(bytecode[3]))
+          end
         end
+        @last = bytecode
         nil
       end
 
       private
+
+      FLAG_ARGS_BLOCKARG = 0x02
 
       def markers_from_block(native_code)
         vis = self.class.new
