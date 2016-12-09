@@ -26,7 +26,6 @@ module Mirrors
     # @return [PackageMirror] the "package" into which this class/module has
     #   been sorted.
     def package
-      # TODO(burke)
     end
 
     # The source files this class is defined and/or extended in.

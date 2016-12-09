@@ -148,34 +148,51 @@ module Mirrors
     # @param [Object] obj
     # @return [Mirror]
     def reflect(obj)
-      klass = basic_class(obj)
-      mirror =
-        if klass == FieldMirror::Field || klass == Symbol
-          case obj.name.to_s
-          when /^@@/
-            intern_field_mirror(ClassVariableMirror.new(obj))
-          when /^@/
-            # instance variables not interned as they are not guaranteed to be
-            # present in all instances
-            InstanceVariableMirror.new(obj)
-          else
-            intern_field_mirror(ConstantMirror.new(obj))
-          end
-        elsif klass == Method || klass == UnboundMethod
-          intern_method_mirror(MethodMirror.new(obj))
-        elsif klass == Class || klass == Module
-          intern_class_mirror(ClassMirror.new(obj))
-        elsif klass == Package
-          intern_package_mirror(PackageMirror.new(obj))
-        else
-          # TODO: revisit if ObjectMirror delivers value
-          ObjectMirror.new(obj)
-        end
-      raise "badness" unless mirror.is_a?(Mirror)
-      mirror
+      reflector = REFLECTORS[basic_class(obj)]
+      send(reflector, obj)
     end
 
+    REFLECTORS = Hash.new(:reflect_object).merge(
+      FieldMirror::Field => :reflect_field,
+      Symbol             => :reflect_field,
+      Method             => :reflect_method,
+      UnboundMethod      => :reflect_method,
+      Class              => :reflect_class,
+      Module             => :reflect_class,
+      Mirrors::Package   => :reflect_package, # TODO: move to PackageMirror::Package
+    ).freeze
+    private_constant :REFLECTORS
+
     private
+
+    def reflect_field(obj)
+      case obj.name.to_s
+      when /^@@/
+        intern_field_mirror(ClassVariableMirror.new(obj))
+      when /^@/
+        # instance variables not interned as they are not guaranteed to be
+        # present in all instances
+        InstanceVariableMirror.new(obj)
+      else
+        intern_field_mirror(ConstantMirror.new(obj))
+      end
+    end
+
+    def reflect_method(obj)
+      intern_method_mirror(MethodMirror.new(obj))
+    end
+
+    def reflect_class(obj)
+      intern_class_mirror(ClassMirror.new(obj))
+    end
+
+    def reflect_package(obj)
+      intern_package_mirror(PackageMirror.new(obj))
+    end
+
+    def reflect_object(obj)
+      ObjectMirror.new(obj)
+    end
 
     # find the class of obj
     def basic_class(obj)
