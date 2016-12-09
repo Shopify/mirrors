@@ -114,8 +114,7 @@ module Mirrors
     # @see #native_code
     # @return [String,nil] the human-readable bytecode disassembly, if available.
     def bytecode
-      @bytecode ||= iseq.disasm if iseq
-      @bytecode
+      @bytecode ||= (native_code.disasm if native_code)
     end
 
     # @todo this changed; update consumers to `#pretty_inspect` the result.
@@ -151,9 +150,7 @@ module Mirrors
       @references ||= Mirrors::ISeq.references(@reflectee)
     end
 
-    # @todo We could add another method to determine whether this method
-    #   shadows a super method by checking whether there is a super method, then
-    #   asserting that {#references} includes +#super+.
+    # @see {#calls_super?}
     # @return [MethodMirror,nil] Parent class/included method of the same name.
     def super_method
       meth = if @owner.is_a?(Class)
@@ -166,6 +163,12 @@ module Mirrors
       end
 
       meth ? Mirrors.reflect(meth) : nil
+    end
+
+    # @see {#super_method}
+    # @return [Boolean] Does this method call +super+?
+    def calls_super?
+      references.any? { |ref| ref.message == :super }
     end
 
     # @return [Symbol] name of the method
