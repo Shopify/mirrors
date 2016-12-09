@@ -69,7 +69,7 @@ module Mirrors
     # @return [String] human-friendly file:line indicator. useful for printing
     #   locations of a set of markers.
     def location
-      "#{@file || "(unknown)"}:#{@line}"
+      "#{@file || '(unknown)'}:#{@line}"
     end
 
     # @!visibility private
