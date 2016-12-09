@@ -42,6 +42,14 @@ module Mirrors
       @reflectee == other
     end
 
+    # @return [ClassMirror] The singleton class of this class
+    def singleton_class
+      sc = Mirrors.rebind(Kernel, @reflectee, :singleton_class).call
+      scm = Mirrors.reflect(sc)
+      scm.singleton_instance = self
+      scm
+    end
+
     private
 
     def reflectee_is_a?(klass)
@@ -50,10 +58,6 @@ module Mirrors
 
     def reflectee_instance_variables
       Mirrors.rebind(Kernel, @reflectee, :instance_variables).call
-    end
-
-    def reflectee_singleton_class
-      Mirrors.rebind(Kernel, @reflectee, :singleton_class).call
     end
 
     def mirrors(list)

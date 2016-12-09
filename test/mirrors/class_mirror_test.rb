@@ -134,12 +134,36 @@ module Mirrors
       assert_equal(exp, nesting)
     end
 
-    def test_source_locations
-      assert(@m.source_files.any? { |l| l.include?('fixtures/class.rb') })
+    def test_nesting_anonymous
+      m = Mirrors.reflect(Module.new)
+      assert_equal([m], m.nesting)
+    end
+
+    def test_source_files
+      assert(@m.source_files.any? { |l| l.path.include?('fixtures/class.rb') })
+    end
+
+    def test_file
+      assert_equal(File.expand_path('../../fixtures/class.rb', __FILE__), @m.file.path)
+    end
+
+    def test_class?
+      assert(@m.class?)
+      refute(Mirrors.reflect(ClassFixtureModule).class?)
+    end
+
+    def test_fields
+      actual = @m.fields.map(&:name)
+      expected = %w(FOO @@cva @civa ClassFixtureNested)
+      assert_equal(expected.sort, actual.sort)
     end
 
     def test_constant_value
       assert_equal("Bar", @m.constant("FOO").value.name)
+    end
+
+    def test_missing_constant
+      assert_equal(nil, @m.constant("nope"))
     end
   end
 end

@@ -4,6 +4,9 @@ module Mirrors
   class MethodMirrorTest < MiniTest::Test
     def setup
       @cm = Mirrors.reflect(MethodSpecFixture)
+      @scm = Mirrors.reflect(SuperMethodSpecFixture)
+      @b64 = Mirrors.reflect(Base64).instance_method(:encode64)
+      @ins = Mirrors.reflect(String).instance_method(:inspect)
       super
     end
 
@@ -18,6 +21,67 @@ module Mirrors
       assert_equal(@f.new.source_location[2],      @m.name.to_s)
       assert_equal(@f.new.source_location[3].name, @m.defining_class.name)
       assert_includes(@m.source, '[__FILE__, __LINE__, __method__.to_s, self.class]')
+    end
+
+    def test_source
+      # defined in C; source not available. we want nil.
+      assert_nil(@ins.source)
+      assert_match(/def encode64/, @b64.source)
+
+      we = Mirrors.reflect(MethodSpecFixture.instance_method(:whatever))
+      assert_match(/def whatever/, we.source)
+    end
+
+    def test_comment
+      # defined in C; commend not available. we want nil.
+      assert_nil(@ins.comment)
+      assert_match(/#/, @b64.comment)
+    end
+
+    def test_bytecode
+      assert_nil(@ins.bytecode)
+      assert_match(/local table/, @b64.bytecode)
+    end
+
+    def test_sexp
+      assert_nil(@ins.sexp)
+      assert_equal(:program, @b64.sexp[0])
+    end
+
+    def test_super_method
+      refute(@scm.instance_method(:not_inherited).super_method)
+
+      s1 = @cm.instance_method(:shadow_with_super)
+      s2 = @scm.instance_method(:shadow_with_super)
+
+      assert_equal(s1, s2.super_method)
+      assert(s2.calls_super?)
+      refute(s1.calls_super?)
+
+      s1 = @cm.instance_method(:shadow_without_super)
+      s2 = @scm.instance_method(:shadow_without_super)
+
+      assert_equal(s1, s2.super_method)
+      refute(s2.calls_super?)
+      refute(s1.calls_super?)
+
+      a = Mirrors.reflect(MethodSpecFixture::A)
+      b = Mirrors.reflect(MethodSpecFixture::B)
+
+      am = a.instance_method(:shadow)
+      bm = b.instance_method(:shadow)
+
+      assert_equal(am, bm.super_method)
+      refute(am.super_method)
+
+      acm = a.class_method(:class_shadow)
+      bcm = b.class_method(:class_shadow)
+
+      # NOTE: it feels like it makes sense for this to resolve as above,
+      # but singleton classes are kind of tricky, and it only *really*
+      # applies once the module is included elsewhere.
+      refute(bcm.super_method)
+      refute(acm.super_method)
     end
 
     def test_arguments

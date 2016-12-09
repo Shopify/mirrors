@@ -1,6 +1,10 @@
 module Mirrors
   # A specific mirror for a class, that includes all the capabilites
   # and information we can gather about classes.
+  #
+  # @!attribute [rw] singleton_instance
+  #   @return [Mirror,nil] if a singleton class, the corresponding
+  #     instance.
   class ClassMirror < ObjectMirror
     # We are careful to not call methods directly on +@reflectee+ here, since
     # people really like to override weird methods on their classes. Instead we
@@ -10,6 +14,8 @@ module Mirrors
     # We don't need to be nearly as careful about this with +Method+ or
     # +UnboundMethod+ objects, since their +@reflectee+s are two core classes,
     # not an arbitrary user class.
+
+    attr_accessor :singleton_instance
 
     def initialize(obj)
       super(obj)
@@ -30,14 +36,9 @@ module Mirrors
 
     # The source files this class is defined and/or extended in.
     #
-    # @return [Array<String>]
+    # @return [Array<FileMirror>]
     def source_files
-      locations = reflectee_send_from_module(:instance_methods, false).collect do |name|
-        method = reflectee_send_from_module(:instance_method, name)
-        sl = method.source_location
-        sl.first if sl
-      end
-      locations.compact.uniq
+      instance_methods.map(&:file).compact.uniq
     end
 
     # @return [Boolean] Is the reflectee is a singleton class?
@@ -66,19 +67,20 @@ module Mirrors
     end
 
     # Searches for the named constant in the mirrored namespace. May
-    # include a colon (::) separated constant path. This _may_ trigger
-    # an autoload!
+    # include a colon (::) separated constant path.
     #
     # @return [ClassMirror, nil] the requested constant, or nil
     def constant(str)
-      path = str.to_s.split("::")
+      path = str.to_s.split('::')
       c = path[0..-2].inject(@reflectee) do |klass, s|
         Mirrors.rebind(Module, klass, :const_get).call(s)
       end
 
-      field_mirror((c || @reflectee), path.last)
-    rescue NameError => e
-      p e
+      owner = c || @reflectee
+      # NameError if constant doesn't exist.
+      Mirrors.rebind(Module, owner, :const_get).call(path.last)
+      field_mirror(owner, path.last)
+    rescue NameError
       nil
     end
 
@@ -105,7 +107,7 @@ module Mirrors
 
     # @return [Array<MethodMirror>] The instance methods of this class.
     def class_methods
-      mirrors(all_instance_methods(reflectee_singleton_class))
+      singleton_class.instance_methods
     end
 
     # The instance methods of this class. To get to the class methods,
@@ -133,8 +135,7 @@ module Mirrors
     # @return [MethodMirror, nil] the method or nil, if none was found
     # @raise [NameError] if the module isn't present
     def class_method(name)
-      m = Mirrors.rebind(Module, reflectee_singleton_class, :instance_method).call(name)
-      Mirrors.reflect(m)
+      singleton_class.instance_method(name)
     end
 
     # This will probably prevent confusion
@@ -179,16 +180,6 @@ module Mirrors
       end
 
       mirrors(consts.sort_by { |c| Mirrors.rebind(Module, c, :name).call })
-    end
-
-    # @deprecated this is dumb, just calculate it in LG.
-    def nested_class_count
-      nested_classes.count
-    end
-
-    # @return [ClassMirror] The singleton class of this class
-    def singleton_class
-      Mirrors.reflect(reflectee_singleton_class)
     end
 
     # @return [ClassMirror] The direct superclass

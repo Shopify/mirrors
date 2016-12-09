@@ -35,6 +35,8 @@ module Mirrors
           @markers << method_marker(:super)
         when :defineclass
           @markers.concat(markers_from_block(bytecode[2]))
+        when :putiseq
+          @markers.concat(markers_from_block(bytecode[1]))
         when :send
           @markers << method_marker(bytecode[1][:mid])
           if (bytecode[1][:flag] & FLAG_ARGS_BLOCKARG) > 0

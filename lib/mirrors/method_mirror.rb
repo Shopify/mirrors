@@ -154,12 +154,16 @@ module Mirrors
     # @return [MethodMirror,nil] Parent class/included method of the same name.
     def super_method
       meth = if @owner.is_a?(Class)
-        Mirrors
-          .rebind(Class.singleton_class, instance, :allocate)
-          .super_method
-          .unbind
+        begin
+          inst = Mirrors.rebind(Class.singleton_class, @owner, :allocate).call
+          bm = @reflectee.bind(inst).super_method
+          bm ? bm.unbind : nil
+        rescue TypeError # @owner is a singleton class
+          # this is kind of solvable but whatever
+          nil
+        end
       else
-        @reflectee.bind(@owner).super_method.unbind
+        @reflectee.super_method
       end
 
       meth ? Mirrors.reflect(meth) : nil

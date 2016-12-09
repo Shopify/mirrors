@@ -63,6 +63,10 @@ module Mirrors
       meth.bind(receiver)
     end
 
+    # Generate {FileMirror}s representing all the code currently loaded by the
+    # application.
+    #
+    # @return [Array<FileMirror>]
     def files
       $LOADED_FEATURES
         .select { |feat| feat =~ %r{^/} }

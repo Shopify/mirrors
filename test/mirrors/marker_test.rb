@@ -31,6 +31,7 @@ module Mirrors
       assert_equal(10, @class_marker.line)
       assert_equal(Marker::NO_COLUMN, @class_marker.start_column)
       assert_equal(Marker::NO_COLUMN, @class_marker.end_column)
+      assert_equal("#{this_file.path}:10", @class_marker.location)
     end
 
     def test_field_marker
@@ -40,6 +41,7 @@ module Mirrors
       assert_equal(16, @field_marker.line)
       assert_equal(Marker::NO_COLUMN, @field_marker.start_column)
       assert_equal(Marker::NO_COLUMN, @field_marker.end_column)
+      assert_equal("#{this_file.path}:16", @field_marker.location)
     end
 
     def test_method_marker
@@ -49,6 +51,7 @@ module Mirrors
       assert_equal(22, @method_marker.line)
       assert_equal(Marker::NO_COLUMN, @method_marker.start_column)
       assert_equal(Marker::NO_COLUMN, @method_marker.end_column)
+      assert_equal("#{this_file.path}:22", @method_marker.location)
     end
 
     def test_hash_and_equal

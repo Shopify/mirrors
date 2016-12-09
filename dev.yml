@@ -4,5 +4,5 @@ up:
 commands:
   test:    bundle exec bin/testunit
   console: bundle exec irb -r mirrors
-  doc:     bundle exec yard doc
+  doc:     bundle exec yard doc --list-undoc
   style:   bundle exec rubocop -D .

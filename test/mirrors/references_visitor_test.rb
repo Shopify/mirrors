@@ -27,5 +27,18 @@ module Mirrors
       ]
       assert_equal(expected, actual)
     end
+
+    def test_file
+      path = File.expand_path('../../fixtures/defineclass.rb', __FILE__)
+      actual = Mirrors.reflect(FileMirror::File.new(path)).references
+      expected = [
+        Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :bar, file: path, line: 3),
+        Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :'core#define_method', file: path, line: 2),
+        Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :baz, file: path, line: 5),
+        Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :each, file: path, line: 5),
+        Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :quux, file: path, line: 5),
+      ]
+      assert_equal(actual, expected)
+    end
   end
 end

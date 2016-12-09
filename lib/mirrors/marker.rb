@@ -64,6 +64,7 @@ module Mirrors
       @end_column = end_column
     end
 
+    # @return [FileMirror,nil] To which file does this Marker point?
     def file
       @file ? Mirrors.reflect(FileMirror::File.new(@file)) : nil
     end
