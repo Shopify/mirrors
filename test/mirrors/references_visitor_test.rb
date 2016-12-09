@@ -8,7 +8,7 @@ module Mirrors
         @ivar += 1 # touch one of the ivars
         to_s # send to_s
         Kernel.exit # reference another class
-        foo { |bar| bar.baz } # send with block. two methods.
+        foo { |bar| bar.baz(3) } # send with block. two methods.
       end
     end
 
