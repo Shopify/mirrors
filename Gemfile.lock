@@ -9,6 +9,8 @@ GEM
   specs:
     ast (2.3.0)
     byebug (9.0.6)
+    docile (1.1.5)
+    json (1.8.3)
     method_source (0.8.2)
     minitest (5.9.1)
     parser (2.3.1.4)
@@ -22,6 +24,11 @@ GEM
       ruby-progressbar (~> 1.7)
       unicode-display_width (~> 1.0, >= 1.0.1)
     ruby-progressbar (1.8.1)
+    simplecov (0.12.0)
+      docile (~> 1.1.0)
+      json (>= 1.8, < 3)
+      simplecov-html (~> 0.10.0)
+    simplecov-html (0.10.0)
     unicode-display_width (1.1.1)
     yard (0.9.5)
 
@@ -33,6 +40,7 @@ DEPENDENCIES
   minitest (~> 5.0)
   mirrors!
   rubocop (~> 0.46)
+  simplecov (~> 0.12)
   yard (~> 0.9)
 
 BUNDLED WITH

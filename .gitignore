@@ -3,5 +3,6 @@
 .rubocop-http*
 .byebug_history
 .vscode/
-.yardoc
-doc
+.yardoc/
+doc/
+coverage/
