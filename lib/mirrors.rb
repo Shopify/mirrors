@@ -7,7 +7,6 @@ require 'mirrors/field_mirror'
 require 'mirrors/method_mirror'
 require 'mirrors/package_mirror'
 require 'mirrors/package_inference'
-require 'mirrors/class_mixin'
 require 'mirrors/iseq'
 
 # Mirrors provides a parallel-world reflection API for ruby.
@@ -204,11 +203,6 @@ module Mirrors
     # find the class of obj
     def basic_class(obj)
       Mirrors.rebind(Kernel, obj, :class).call
-    end
-
-    # find the class name of obj
-    def basic_class_name(klass)
-      Mirrors.rebind(Module, klass, :name).call
     end
 
     def mirrors(list)
