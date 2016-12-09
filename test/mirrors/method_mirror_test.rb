@@ -27,9 +27,6 @@ module Mirrors
       # defined in C; source not available. we want nil.
       assert_nil(@ins.source)
       assert_match(/def encode64/, @b64.source)
-
-      we = Mirrors.reflect(MethodSpecFixture.instance_method(:whatever))
-      assert_match(/def whatever/, we.source)
     end
 
     def test_comment

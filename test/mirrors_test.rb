@@ -23,6 +23,13 @@ class MirrorsTest < MiniTest::Test
     refute_includes(instances, inst2.inspect)
   end
 
+  def test_mirrors?
+    o1 = Object.new
+    o2 = Object.new
+    assert(Mirrors.reflect(o1).mirrors?(o1))
+    refute(Mirrors.reflect(o2).mirrors?(o1))
+  end
+
   def test_object_by_id
     o = Object.new
     assert_equal(o.inspect, Mirrors.object_by_id(o.object_id).name)

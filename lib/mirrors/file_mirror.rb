@@ -22,6 +22,8 @@ module Mirrors
     #   YARV bytecode.
     def native_code
       @native_code ||= RubyVM::InstructionSequence.compile_file(path)
+    rescue Errno::ENOENT, Errno::EPERM
+      nil
     end
 
     # @return [String,nil] Disassembly of the YARV bytecode for this file, if
@@ -43,6 +45,8 @@ module Mirrors
     # @return [String,nil] The source code of this method, if available.
     def source
       ::File.read(path)
+    rescue Errno::ENOENT, Errno::EPERM
+      nil
     end
   end
 end

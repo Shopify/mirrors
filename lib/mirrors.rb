@@ -177,7 +177,6 @@ module Mirrors
     REFLECTORS = Hash.new(:reflect_object).merge(
       FieldMirror::Field => :reflect_field,
       FileMirror::File   => :reflect_file,
-      Symbol             => :reflect_field,
       Method             => :reflect_method,
       UnboundMethod      => :reflect_method,
       Class              => :reflect_class,

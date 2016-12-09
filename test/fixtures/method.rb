@@ -37,8 +37,6 @@ class MethodSpecFixture
     def shadow
     end
   end
-
-def whatever;end # rubocop:disable Style/IndentationConsistency
 end
 
 class SuperMethodSpecFixture < MethodSpecFixture

@@ -14,20 +14,11 @@ module Mirrors
       @reflectee = obj
     end
 
-    # @deprecated We shouldn't depend on object IDs in LG. Remove this.
-    # @return [String] stringified object_id of the reflectee.
-    def subject_id
-      @reflectee.__id__.to_s
-    end
-
     # Whatever might be considered the 'name' of the object. Best-effort.
     # @return [String]
     def name
       if reflectee_is_a?(String)
         @reflectee
-      elsif reflectee_is_a?(Symbol)
-        # if you've overridden +Symbol#to_s+, you deserve whatever you get.
-        @reflectee.to_s
       else
         # +ClassMirror+ overrides this to force +Module#inspect+ to be used,
         # but with some generic object, we can't do much better than
