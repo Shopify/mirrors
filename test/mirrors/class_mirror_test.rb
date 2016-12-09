@@ -12,7 +12,7 @@ module Mirrors
     # reflection methods. We want ClassMirror to use the Mirrors.rebind API.
     def test_no_direct_send
       file = Mirrors.reflect(Mirrors::ClassMirror).file
-      contents = File.read(file)
+      contents = File.read(file.path)
       refute_match(/@reflectee\./, contents)
     end
 

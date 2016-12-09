@@ -150,7 +150,7 @@ module Mirrors
       @references ||= Mirrors::ISeq.references(@reflectee)
     end
 
-    # @see {#calls_super?}
+    # @see #calls_super?
     # @return [MethodMirror,nil] Parent class/included method of the same name.
     def super_method
       meth = if @owner.is_a?(Class)
@@ -165,7 +165,7 @@ module Mirrors
       meth ? Mirrors.reflect(meth) : nil
     end
 
-    # @see {#super_method}
+    # @see #super_method
     # @return [Boolean] Does this method call +super+?
     def calls_super?
       references.any? { |ref| ref.message == :super }

@@ -83,11 +83,13 @@ module Mirrors
       def uncached_infer_from(mod, exclusions, resolver)
         return CORE_PACKAGE if CORE.include?(nesting_first(mod.name))
 
-        filename = mod.file(resolver)
+        file = mod.file(resolver)
 
-        if filename.nil?
+        if file.nil?
           return try_harder(mod, exclusions, resolver)
         end
+
+        filename = file.path
 
         return APPLICATION_PACKAGE if filename.start_with?(Mirrors.project_root)
         return CORE_STDLIB_PACKAGE if filename.start_with?(rubylibdir)

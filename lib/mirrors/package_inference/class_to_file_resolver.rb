@@ -95,7 +95,7 @@ module Mirrors
 
         defined_directly_on_class.each do |mm|
           if f = mm.file
-            files[f] += 1
+            files[f.path] += 1
           end
         end
 
