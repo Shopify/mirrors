@@ -108,6 +108,25 @@ module Mirrors
       obj ? reflect(obj) : nil
     end
 
+    # Search all methods of all classes for references to the provided
+    # method name.
+    #
+    # @param [Symbol] message the method name to search for
+    # @return [Array<Marker>]
+    def senders_of(message)
+      marks = []
+      Mirrors.classes.each do |klass|
+        [:instance_methods, :class_methods].each do |group|
+          klass.send(group).each do |method|
+            method.references.each do |mark|
+              marks << mark if mark.message == message
+            end
+          end
+        end
+      end
+      marks
+    end
+
     # Query the system for implementors of a particular message
     #
     # @param [String] message the message name

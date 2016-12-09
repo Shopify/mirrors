@@ -222,7 +222,7 @@ module Mirrors
     # @return [String] the default +#inspect+ of this class
     def name
       # +name+ itself is blank for anonymous/singleton classes
-      reflectee_send_from_module(:inspect)
+      @name ||= reflectee_send_from_module(:inspect)
     end
 
     # @return [String] the last component in the module nesting of the name.

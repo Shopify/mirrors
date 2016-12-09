@@ -13,6 +13,11 @@ module Mirrors
   # objects, but also to their static representations (bytecode, source, ...),
   # their debugging information and statistical information
   class MethodMirror < Mirror
+    def initialize(obj)
+      @owner = obj.owner
+      super
+    end
+
     # @return [ClassMirror] The class this method was originally defined in
     def defining_class
       Mirrors.reflect(@reflectee.owner)
@@ -62,24 +67,31 @@ module Mirrors
     # Is the method +:public+, +:private+, or +:protected+?
     # @return [:public, :private, :protected]
     def visibility
-      return :public  if visibility?(:public)
-      return :private if visibility?(:private)
-      :protected
+      @visibility ||= begin
+        name = @reflectee.name
+        if @owner.protected_instance_methods(false).include?(name)
+          :protected
+        elsif @owner.private_instance_methods(false).include?(name)
+          :private
+        else
+          :public
+        end
+      end
     end
 
     # @return [Boolean] Is this a protected method?
     def protected?
-      visibility?(:protected)
+      visibility == :protected
     end
 
     # @return [Boolean] Is this a public method?
     def public?
-      visibility?(:public)
+      visibility == :public
     end
 
     # @return [Boolean] Is this a private method?
     def private?
-      visibility?(:private)
+      visibility == :private
     end
 
     # @!endgroup
@@ -94,7 +106,7 @@ module Mirrors
 
     # @return [String,nil] The pre-definition comment of this method, if available.
     def comment
-      @reflectee.comment
+      @comment ||= @reflectee.comment
     rescue MethodSource::SourceNotFoundError
       nil
     end
@@ -136,7 +148,7 @@ module Mirrors
     # @return [Array<Marker>,nil] list of all methods invoked in the method
     #   body.
     def references
-      Mirrors::ISeq.references(@reflectee)
+      @references ||= Mirrors::ISeq.references(@reflectee)
     end
 
     # @todo We could add another method to determine whether this method
@@ -144,15 +156,13 @@ module Mirrors
     #   asserting that {#references} includes +#super+.
     # @return [MethodMirror,nil] Parent class/included method of the same name.
     def super_method
-      owner = @reflectee.owner
-
-      meth = if owner.is_a?(Class)
+      meth = if @owner.is_a?(Class)
         Mirrors
           .rebind(Class.singleton_class, instance, :allocate)
           .super_method
           .unbind
       else
-        @reflectee.bind(owner).super_method.unbind
+        @reflectee.bind(@owner).super_method.unbind
       end
 
       meth ? Mirrors.reflect(meth) : nil
@@ -165,11 +175,6 @@ module Mirrors
 
     private
 
-    def visibility?(type)
-      list = @reflectee.owner.send("#{type}_instance_methods")
-      list.any? { |m| m == @reflectee.name }
-    end
-
     def args(type)
       args = []
       @reflectee.parameters.select { |t, n| args << n.to_s if t == type }
@@ -177,7 +182,7 @@ module Mirrors
     end
 
     def source_location
-      @reflectee.source_location
+      @source_location ||= @reflectee.source_location
     end
 
     def unindent(str)
