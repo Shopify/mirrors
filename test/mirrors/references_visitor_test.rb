@@ -9,6 +9,7 @@ module Mirrors
         to_s # send to_s
         Kernel.exit # reference another class
         foo { |bar| bar.baz(3) } # send with block. two methods.
+        foo2(&:bar2) # send with block. two methods.
       end
     end
 
@@ -21,6 +22,8 @@ module Mirrors
         Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :exit, file: __FILE__, line: 10),
         Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :foo, file: __FILE__, line: 11),
         Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :baz, file: __FILE__, line: 11),
+        Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :foo2, file: __FILE__, line: 12),
+        Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :bar2, file: __FILE__, line: 12),
       ]
       assert_equal(expected, actual)
     end
