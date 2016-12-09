@@ -30,11 +30,21 @@ module Mirrors
           @markers << class_marker(bytecode.last)
         when :opt_send_without_block
           @markers << method_marker(bytecode[1][:mid])
+        when :send
+          # TODO(burke): test this
+          @markers << method_marker(bytecode[1][:mid])
+          @markers.concat(markers_from_block(bytecode[3]))
         end
         nil
       end
 
       private
+
+      def markers_from_block(native_code)
+        vis = self.class.new
+        vis.call(native_code)
+        vis.markers
+      end
 
       def class_marker(name)
         Marker.new(
