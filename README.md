@@ -37,3 +37,13 @@ puts enc.comment
 puts enc.references.map(&:message)
 # => [:pack]
 ```
+
+## TODO
+
+* Implement `FileMirror`: everywhere we have file paths, instead return a `FileMirror`. Ideas:
+  * `methods` returns all methods defined in that file
+  * `references_out` returns all methods called in methods from that file (reevaluate name)
+  * `references_in` returns all method calls into that file (reevaluate name)
+  * `classes` shows classes defined in this file
+  * `source` just reads file
+  * `path` returns path
