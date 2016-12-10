@@ -13,6 +13,7 @@ puts cm.inspect
 
 mms = cm.instance_methods
 mm = mms.last
+
 puts mm.inspect
 # => #<Mirrors::MethodMirror...>
 
