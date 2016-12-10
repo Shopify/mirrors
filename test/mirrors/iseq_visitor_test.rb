@@ -44,7 +44,7 @@ module Mirrors
       end
       assert(class_count >= 788)
       assert(method_count >= 4782)
-      assert(bytecode_count >= 47308)
+      assert(bytecode_count >= 47_308)
 
       # puts "Walked #{class_count} classes with #{method_count} methods and #{bytecode_count} bytecodes."
       # puts "Largest method #{largest_method.defining_class.name}.#{largest_method.name}, #{largest} bytecodes."

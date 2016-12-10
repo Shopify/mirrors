@@ -1,7 +1,34 @@
 AllCops:
   Exclude:
-  - 'db/schema.rb'
-  DisabledByDefault: true
+  - 'test/fixtures/*'
+  DisabledByDefault: false
+
+Style/StringLiterals:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Style/TrailingCommaInLiteral:
+  Enabled: false
+
+Style/TrailingCommaInArguments:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Lint/AssignmentInCondition:
+  Enabled: false
+
+# default shopify style guide follows:
+# inheriting from a URL doesn't seem to work with CodeClimate
 
 Style/AccessModifierIndentation:
   EnforcedStyle: indent
