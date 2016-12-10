@@ -1,4 +1,5 @@
-# Mirrors [![Code Climate](https://codeclimate.com/github/Shopify/mirrors/badges/gpa.svg)](https://codeclimate.com/github/Shopify/mirrors) [![Build Status](https://travis-ci.org/Shopify/mirrors.svg?branch=master)](https://travis-ci.org/Shopify/mirrors)
+# Mirrors [![Code Climate](https://codeclimate.com/github/Shopify/mirrors/badges/gpa.svg)](https://codeclimate.com/github/Shopify/mirrors) [![Build Status](https://travis-ci.org/Shopify/mirrors.svg?branch=master)](https://travis-ci.org/Shopify/mirrors) [![Yard Docs](http://img.shields.io/badge/yard-docs-blue.svg)](http://rubydoc.info/github/Shopify/mirrors)
+
 
 Docs forthcoming, but here's a usage example:
 
