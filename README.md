@@ -1,4 +1,4 @@
-# Mirrors
+# Mirrors [![Code Climate](https://codeclimate.com/github/Shopify/mirrors/badges/gpa.svg)](https://codeclimate.com/github/Shopify/mirrors)
 
 Docs forthcoming, but here's a usage example:
 
