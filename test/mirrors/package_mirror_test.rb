@@ -5,8 +5,8 @@ module Mirrors
     def setup
       super
       @p = Mirrors.reflect(Package.new('a:b:c'))
-      @gems = Mirrors.reflect(Package.new('gems'))
-      @minitest = Mirrors.reflect(Package.new('gems:minitest'))
+      @core = Mirrors.reflect(Package.new('core'))
+      @stdlib = Mirrors.reflect(Package.new('core:stdlib'))
     end
 
     def test_name
@@ -23,12 +23,12 @@ module Mirrors
 
     def test_children
       Mirrors.packages # scan the system
-      assert_includes(@gems.children, @minitest)
+      assert_includes(@core.children, @stdlib)
     end
 
     def test_contents
       Mirrors.packages # scan the system
-      assert_includes(@minitest.contents, Mirrors.reflect(MiniTest))
+      assert_includes(@stdlib.contents, Mirrors.reflect(Base64))
     end
 
     def test_nesting
