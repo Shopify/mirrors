@@ -7,13 +7,15 @@ Style/StringLiterals:
   Enabled: false
 
 Metrics/MethodLength:
-  Enabled: false
+  Enabled: true
 
 Metrics/ClassLength:
-  Enabled: false
+  CountComments: false
+  Enabled: true
 
 Metrics/ModuleLength:
-  Enabled: false
+  CountComments: false
+  Enabled: true
 
 Style/TrailingCommaInLiteral:
   Enabled: false
