@@ -15,7 +15,7 @@ module Mirrors
   #   @return [Integer] end column index to which the marker points; -1
   #     indicating none.
   class Marker
-    attr_reader :message, :type, :line, :start_column, :end_column
+    attr_reader :message, :type, :line, :start_column, :end_column, :receiver
 
     # for later use
     # TYPE_TASK    = :'mirrors.marker.task'
@@ -50,6 +50,7 @@ module Mirrors
     # @param [Integer] end_column see {#end_column}
     def initialize(
       type:,
+      receiver: nil,
       message: '',
       file: nil,
       line: NO_LINE,
@@ -57,6 +58,7 @@ module Mirrors
       end_column: NO_COLUMN
     )
       @type = type
+      @receiver = receiver
       @message = message
       @file = file
       @line = line

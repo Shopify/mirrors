@@ -10,9 +10,9 @@ module Mirrors
     # @see ReferencesVisitor
     # @param [Method,UnboundMethod] iseqable method for walk
     # @return [Array<Marker>] list of references found in the method
-    def self.references(iseqable)
+    def self.references(iseqable, types = nil)
       iseq = RubyVM::InstructionSequence.of(iseqable)
-      visitor = ReferencesVisitor.new
+      visitor = ReferencesVisitor.new(nil, types)
       visitor.call(iseq)
       visitor.markers
     end

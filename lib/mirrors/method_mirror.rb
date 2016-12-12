@@ -150,7 +150,18 @@ module Mirrors
     # @return [Array<Marker>,nil] list of all methods invoked in the method
     #   body.
     def references
-      @references ||= Mirrors::ISeq.references(@reflectee)
+      @references ||= Mirrors::ISeq.references(@reflectee, param_types)
+    end
+
+    def param_types
+      return nil
+
+      ds = parsed_docstring
+      return unless ds
+      tags = ds.tags
+        .select { |t| t.tag_name == 'param' }
+        .map { |t| [t.name, Mirrors::Types::Parser.new(t, @owner).parse] }
+      Hash[tags]
     end
 
     def param_type(name)
