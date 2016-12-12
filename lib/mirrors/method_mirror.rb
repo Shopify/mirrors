@@ -1,7 +1,10 @@
 require 'method_source'
 require 'base64'
 require 'ripper'
+require 'yard'
+
 require 'mirrors/iseq/references_visitor'
+require 'mirrors/types/parser'
 
 module Mirrors
   # A MethodMirror should reflect on methods, but in a more general sense than
@@ -150,6 +153,16 @@ module Mirrors
       @references ||= Mirrors::ISeq.references(@reflectee)
     end
 
+    def return_type
+      ds = parsed_docstring
+      return unless ds
+      tag = ds.tags.detect { |t| t.tag_name == 'return' }
+      return unless tag
+      return unless types = tag.types
+
+      Mirrors::Types::Parser.new(types[0], @owner).parse
+    end
+
     # @see #calls_super?
     # @return [MethodMirror,nil] Parent class/included method of the same name.
     def super_method
@@ -212,5 +225,17 @@ module Mirrors
       return str if min_indent.zero?
       lines.map { |line| line =~ /\S/ ? line.gsub(/^ {#{min_indent}}/, "") : line }.join("\n")
     end
+
+    def parsed_docstring
+      @docstring ||= begin
+        c = comment
+        return unless c && c =~ /@(return|param) /
+        # TODO: cvar maybe?
+        dsp = YARD::DocstringParser.new(YARD::Tags::Library.instance)
+        # TODO: maybe we can use the yard internal bit to do this less sketchily
+        dsp.parse(c.gsub(/^\s*# /, ''))
+      end
+    end
+
   end
 end

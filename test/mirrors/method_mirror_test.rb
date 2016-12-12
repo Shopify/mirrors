@@ -30,9 +30,23 @@ module Mirrors
     end
 
     def test_comment
-      # defined in C; commend not available. we want nil.
+      # defined in C; comment not available. we want nil.
       assert_nil(@ins.comment)
       assert_match(/#/, @b64.comment)
+    end
+
+    # @return [{Symbol => Integer}]
+    def test_return_type
+      mm = Mirrors.reflect(self.class.instance_method(:test_return_type))
+      exp = [
+        Mirrors::Types::HashCollectionType.new(
+          'Hash',
+          [Mirrors.reflect(Symbol)],
+          [Mirrors.reflect(Integer)],
+        )
+      ]
+      assert_equal(exp, mm.return_type)
+      { a: 3 }
     end
 
     def test_bytecode
