@@ -1,35 +1,35 @@
 AllCops:
   Exclude:
   - 'test/fixtures/*'
-  DisabledByDefault: false
+  DisabledByDefault: true
 
-Style/StringLiterals:
-  Enabled: false
+# Style/StringLiterals:
+#   Enabled: false
 
-Metrics/MethodLength:
-  CountComments: false
-  Max: 16
-  Enabled: true
+# Metrics/MethodLength:
+#   CountComments: false
+#   Max: 16
+#   Enabled: true
 
-Metrics/ClassLength:
-  CountComments: false
-  Enabled: true
+# Metrics/ClassLength:
+#   CountComments: false
+#   Enabled: true
 
-Metrics/ModuleLength:
-  CountComments: false
-  Enabled: true
+# Metrics/ModuleLength:
+#   CountComments: false
+#   Enabled: true
 
-Style/TrailingCommaInLiteral:
-  Enabled: false
+# Style/TrailingCommaInLiteral:
+#   Enabled: false
 
-Style/TrailingCommaInArguments:
-  Enabled: false
+# Style/TrailingCommaInArguments:
+#   Enabled: false
 
-Style/IfUnlessModifier:
-  Enabled: false
+# Style/IfUnlessModifier:
+#   Enabled: false
 
-Lint/AssignmentInCondition:
-  Enabled: false
+# Lint/AssignmentInCondition:
+#   Enabled: false
 
 # default shopify style guide follows:
 # inheriting from a URL doesn't seem to work with CodeClimate
