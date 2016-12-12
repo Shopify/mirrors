@@ -46,7 +46,7 @@ module Mirrors
       n = name
       # #<Class:0x1234deadbeefcafe> is an anonymous class.
       # #<Class:A> is the singleton class of A
-      # #<Class:#<Class:0x1234deadbeefcafe>> is the ginelton class of an
+      # #<Class:#<Class:0x1234deadbeefcafe>> is the singleton class of an
       #   anonymous class
       n.match(/^\#<Class:.*>$/) && !n.match(/^\#<Class:0x\h+>$/)
     end
