@@ -1,4 +1,4 @@
-class YARVDataExtractor
+class YARVDataParser
   def initialize(insns_inc_path, insns_info_inc_path)
     @contents = File.read(insns_inc_path) + File.read(insns_info_inc_path)
   end

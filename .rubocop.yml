@@ -1,6 +1,7 @@
 AllCops:
   Exclude:
   - 'test/fixtures/*'
+  TargetRubyVersion: '2.3'
   DisabledByDefault: true
 
 # Style/StringLiterals:
