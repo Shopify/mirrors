@@ -31,7 +31,7 @@ module Mirrors
     class FixedCollectionType < CollectionType
     end
 
-    class HashCollectionType < Type
+    class HashType < Type
       attr_accessor :key_types, :value_types
 
       def initialize(name, key_types, value_types)
@@ -58,7 +58,7 @@ module Mirrors
         hash_collection_next: /=>/,
         hash_collection_end: /\}/,
         parse_end: nil
-      }
+      }.freeze
 
       def self.parse(string)
         new.parse(string)
@@ -97,7 +97,7 @@ module Mirrors
                 type = klass.new(name, parse)
               when :hash_collection_start
                 name ||= "Hash"
-                type = HashCollectionType.new(name, parse, parse)
+                type = HashType.new(name, parse, parse)
               when :hash_collection_next, :hash_collection_end, :fixed_collection_end, :collection_end, :parse_end
                 raise SyntaxError, "expecting name, got '#{token}'" if name.nil?
                 unless type

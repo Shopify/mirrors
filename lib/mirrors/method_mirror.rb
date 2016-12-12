@@ -153,6 +153,16 @@ module Mirrors
       @references ||= Mirrors::ISeq.references(@reflectee)
     end
 
+    def param_type(name)
+      ds = parsed_docstring
+      return unless ds
+      tag = ds.tags.detect { |t| t.tag_name == 'param' && t.name == name.to_s }
+      return unless tag
+      return unless types = tag.types
+
+      Mirrors::Types::Parser.new(types[0], @owner).parse
+    end
+
     def return_type
       ds = parsed_docstring
       return unless ds

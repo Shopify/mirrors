@@ -37,9 +37,9 @@ module Mirrors
 
     # @return [{Symbol => Integer}]
     def test_return_type
-      mm = Mirrors.reflect(self.class.instance_method(:test_return_type))
+      mm = Mirrors.reflect(method(:test_return_type))
       exp = [
-        Mirrors::Types::HashCollectionType.new(
+        Mirrors::Types::HashType.new(
           'Hash',
           [Mirrors.reflect(Symbol)],
           [Mirrors.reflect(Integer)],
@@ -47,6 +47,18 @@ module Mirrors
       ]
       assert_equal(exp, mm.return_type)
       { a: 3 }
+    end
+
+    # @param [String] a
+    # @return [Integer]
+    def example_param(a)
+      a.size
+    end
+
+    def test_param_type
+      mm = Mirrors.reflect(method(:example_param))
+      assert_equal([Mirrors.reflect(String)], mm.param_type(:a))
+      assert_equal([Mirrors.reflect(Integer)], mm.return_type)
     end
 
     def test_bytecode
