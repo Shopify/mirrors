@@ -1,4 +1,4 @@
-require 'mirrors/iseq/yasmdata'
+require 'mirrors/iseq/yarvdata'
 
 module Mirrors
   module ISeq
@@ -61,10 +61,10 @@ module Mirrors
           when Symbol
             @label = bc
           when Array # an actual instruction
-            @opcode = YASMData.id2insn_no(bc.first)
+            @opcode = YARVData::INSTRUCTION_NUMBERS[bc.first]
             unrecognized_bytecode(bc) unless @opcode
             visit(bc)
-            @pc += YASMData.insn_no2size(@opcode)
+            @pc += YARVData::LENGTH_INFO[@opcode]
           end
         end
       end
