@@ -69,8 +69,6 @@ module Mirrors
 
       private
 
-      FLAG_ARGS_BLOCKARG = 0x02
-
       def getlocal(index, level)
         name = findlocal(index, level)
         #puts "getlocal #{index} #{level} ::: #{name}"

@@ -46,6 +46,8 @@ module Mirrors
         raise NotImplementedError, 'subclass responsibility'
       end
 
+      FLAG_ARGS_BLOCKARG = 0x02
+
       private
 
       # walk the opcodes
@@ -66,6 +68,36 @@ module Mirrors
             visit(bc)
             @pc += YARVData::LENGTH_INFO[@opcode]
           end
+        end
+      end
+
+      def stack_increase(bc)
+        incr = YARVData::STACK_INCREASE[bc.first]
+        case incr
+        when Fixnum
+          incr
+        when :send, :invokesuper
+          -(bc[1][:orig_argc] + (bc[1][:flag] & FLAG_ARGS_BLOCKARG > 0 ? 1 : 0))
+        when :expandarray
+          bc[1] - 1 + (bc[2] & 1 > 0 ? 1 : 0)
+        when :opt_send_without_block
+          -bc[1][:orig_argc]
+        when :invokeblock
+          1 - bc[1][:orig_argc]
+        when :zero_minus_op_0
+          -bc[1]
+        when :zero_minus_op_1
+          -bc[2]
+        when :op_0
+          bc[1]
+        when :op_1
+          bc[2]
+        when :one_minus_op_0
+          1 - bc[1]
+        when :one_minus_op_1
+          1 - bc[2]
+        else
+          raise 'nyi'
         end
       end
     end
