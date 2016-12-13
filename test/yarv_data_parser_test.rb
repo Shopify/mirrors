@@ -8,7 +8,8 @@ class YARVDataParserTest < MiniTest::Test
     @ydp = YARVDataParser.new(datadir + '/insns.inc', datadir + '/insns_info.inc')
   end
 
-  NUM_INSTRUCTIONS = 94
+  NUM_INSTRUCTIONS = 91
+  SETLOCAL_OP__WC_0 = 87
 
   def test_operand_type
     assert_equal(:num, @ydp.operand_type('N'))
@@ -17,7 +18,7 @@ class YARVDataParserTest < MiniTest::Test
   def test_instruction_numbers
     data = @ydp.instruction_numbers
     assert_equal(0, data[:nop])
-    assert_equal(90, data[:setlocal_OP__WC__0])
+    assert_equal(SETLOCAL_OP__WC_0, data[:setlocal_OP__WC__0])
     assert_equal(NUM_INSTRUCTIONS, data.size)
   end
 
@@ -25,30 +26,30 @@ class YARVDataParserTest < MiniTest::Test
     data = @ydp.operand_info
     assert_equal([], data[0])
     assert_equal([:lindex, :num], data[1])
-    assert_equal([:lindex], data[90])
+    assert_equal([:lindex], data[SETLOCAL_OP__WC_0])
     assert_equal(NUM_INSTRUCTIONS, data.size)
   end
 
   def test_length_info
     data = @ydp.length_info
     assert_equal(1, data[0])
-    assert_equal(2, data[90])
+    assert_equal(2, data[SETLOCAL_OP__WC_0])
     assert_equal(NUM_INSTRUCTIONS, data.size)
   end
 
   def test_stack_push_num_info
     data = @ydp.stack_push_num_info
     assert_equal(0, data[0])
-    assert_equal(0, data[90])
+    assert_equal(0, data[SETLOCAL_OP__WC_0])
     assert_equal(NUM_INSTRUCTIONS, data.size)
   end
 
   def test_stack_increase
     data = @ydp.stack_increase
     assert_equal(0, data[0])
-    assert_equal(-1, data[90])
-    assert_equal(:expandarray, data[26])
-    assert_equal(:one_minus_op_0, data[20])
+    assert_equal(-1, data[SETLOCAL_OP__WC_0])
+    assert_equal(:expandarray, data[25])
+    assert_equal(:one_minus_op_0, data[19])
     assert_equal(NUM_INSTRUCTIONS, data.size)
   end
 end
