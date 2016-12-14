@@ -9,6 +9,7 @@ require 'mirrors/method_mirror'
 require 'mirrors/package_mirror'
 require 'mirrors/package_inference'
 require 'mirrors/iseq'
+require 'mirrors/m'
 
 # Mirrors provides a parallel-world reflection API for ruby.
 # See {file:README.md} for more information.

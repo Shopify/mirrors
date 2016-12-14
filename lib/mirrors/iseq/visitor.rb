@@ -97,7 +97,7 @@ module Mirrors
         when :one_minus_op_1
           1 - bc[2]
         else
-          raise 'nyi'
+          raise '???'
         end
       end
     end

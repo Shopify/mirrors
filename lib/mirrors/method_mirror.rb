@@ -1,7 +1,7 @@
 require 'method_source'
 require 'base64'
 require 'ripper'
-require 'yard'
+# require 'yard'
 
 require 'mirrors/iseq/references_visitor'
 require 'mirrors/types/parser'
