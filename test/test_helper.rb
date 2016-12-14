@@ -6,6 +6,8 @@ SimpleCov.start do
   add_filter 'test'
 end
 
+require 'mirrors/init'
+
 require 'mirrors'
 
 require 'fixtures/reflect'

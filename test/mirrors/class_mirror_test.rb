@@ -165,5 +165,18 @@ module Mirrors
     def test_missing_constant
       assert_equal(nil, @m.constant("nope"))
     end
+
+    def test_stripe_proposal_package
+      assert_equal('some-package', @m.stripe_proposal_package)
+    end
+
+    def test_stripe_proposal_private?
+      top  = ClassFixture
+      priv = ClassFixture::ClassFixtureNested
+      pub  = ClassFixture::ClassFixtureNested::ClassFixtureNestedNested
+      refute(Mirrors.reflect(top).stripe_proposal_private?)
+      assert(Mirrors.reflect(priv).stripe_proposal_private?)
+      refute(Mirrors.reflect(pub).stripe_proposal_private?)
+    end
   end
 end

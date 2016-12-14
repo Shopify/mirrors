@@ -3,10 +3,12 @@
 module ClassFixtureModule
 end
 
+# @package some-package
 class ClassFixture
   FOO = "Bar"
 
   class ClassFixtureNested
+    # @export ClassFixtureNestedNested
     class ClassFixtureNestedNested
     end
   end

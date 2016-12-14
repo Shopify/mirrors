@@ -54,7 +54,7 @@ module Mirrors
       def try_traced(class_name)
         return false unless defined?(Mirrors::Init)
         files = Mirrors::Init.class_files(class_name)
-        files && files.size == 1 ? files.first : nil
+        (files && files.size == 1) ? files.first : nil
       end
 
       def try_fast(cm, demodulized_name)
