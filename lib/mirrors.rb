@@ -7,6 +7,7 @@ require 'mirrors/field_mirror'
 require 'mirrors/file_mirror'
 require 'mirrors/method_mirror'
 require 'mirrors/package_mirror'
+require 'mirrors/application_package_support'
 require 'mirrors/package_inference'
 require 'mirrors/iseq'
 
