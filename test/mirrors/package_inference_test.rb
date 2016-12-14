@@ -26,7 +26,7 @@ module Mirrors
 
     def test_unknown_eval
       eval('class Unknown; end')
-      assert_equal('unknown', infer(Unknown))
+      assert_equal('eval', infer(Unknown))
     end
 
     private
