@@ -1,5 +1,8 @@
 module Mirrors
   module ApplicationPackageSupport
+    @memo_package = {}
+    @memo_private = {}
+
     # Find the package for a class/module from a line in the docstring
     # before some location where the class is opened of the form
     # +# @package foo+.
@@ -8,20 +11,26 @@ module Mirrors
     #   multiple packages are specified.
     # @todo if conflicting packages are specified at different definition
     #   sites, fail.
-    # @todo memoize, but make sure to cache nils
     #
     # @param [ClassMirror] class_mirror class to search for package of
     # @return [String,nil] package name, if any.
     def package(class_mirror)
-      class_mirror.nesting.each do |cm|
+      if hit = @memo_package[class_mirror]
+        return hit == :cached_nil ? nil : hit
+      end
+
+      found = nil
+      class_mirror.nesting.detect do |cm|
         next unless ranges = Mirrors::Init.definition_ranges(cm.name)
-        ranges.each do |_, file, startline, _|
+        ranges.detect do |_, file, startline, _|
           if pkg = tag_for_block("@package", file, startline)
-            return Package.new(pkg)
+            found = Package.new(pkg)
           end
         end
       end
-      nil
+
+      @memo_package[class_mirror] = found ? found : :cached_nil
+      found
     end
     module_function :package
 
@@ -45,22 +54,30 @@ module Mirrors
     #   Mirrors.reflect(Foo::Baz).private? # => true
     #
     # @todo verify the name specified in the export comment
-    # @todo memoize, but make sure to cache false
     #
     # @param [ClassMirror] class_mirror class to test visibility of
     # @return [Boolean]
     def private?(class_mirror)
-      return false unless package(class_mirror)
-
-      ranges = Mirrors::Init.definition_ranges(class_mirror.name)
-      return true unless ranges # true? false? what makes more sense?
-
-      ranges.each do |_, file, startline, _|
-        return false if tag_for_block("@package", file, startline)
-        return false if tag_for_block("@export", file, startline)
+      unless (hit = @memo_private[class_mirror]).nil?
+        return hit
       end
 
-      true
+      unless package(class_mirror)
+        return @memo_private[class_mirror] = false
+      end
+
+      ranges = Mirrors::Init.definition_ranges(class_mirror.name)
+      unless ranges # true? false? what makes more sense?
+        return @memo_private[class_mirror] = true
+      end
+
+      ranges.each do |_, file, startline, _|
+        if tag_for_block("@package", file, startline) || tag_for_block("@export", file, startline)
+          return @memo_private[class_mirror] = false
+        end
+      end
+
+      @memo_private[class_mirror] = true
     end
     module_function :private?
 
