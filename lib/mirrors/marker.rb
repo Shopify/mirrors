@@ -24,7 +24,11 @@ module Mirrors
 
     # the marker indicates a location in source where a constant (named as
     # {#message}) is referenced.
-    TYPE_CONSTANT_REFERENCE = :'mirrors.marker.text.constant_reference'
+    TYPE_STATIC_CONSTANT_REFERENCE = :'mirrors.marker.text.static_constant_reference'
+    # the marker indicates a location in source where a constant (named as
+    # {#message}) is referenced, but with an ambiguous receiver (e.g. +A::B+ in
+    # +f::A::B+)
+    TYPE_DYNAMIC_CONSTANT_REFERENCE = :'mirrors.marker.text.dynamic_constant_reference'
     # the marker indicates a location in source where a method (named as
     # {#message}) is referenced.
     TYPE_METHOD_REFERENCE = :'mirrors.marker.text.method_reference'

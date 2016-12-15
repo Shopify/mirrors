@@ -39,33 +39,48 @@ module Mirrors
       end
 
       def find_references
-        aggregating = false
+        aggregation_type = false
         const = []
+        const_line = -1
 
         instructions.each do |bytecode|
           op = bytecode.first
 
-          if aggregating
-            if op != :getconstant
-              qualified = const.map do |bc|
-                bc.first == :putobject ? '' : bc.last
-              end.join('::').to_sym
-              @markers << class_marker(qualified)
-              aggregating = false
-              const.clear
+          if aggregation_type && op != :getconstant
+            const_name = const.map(&:last).join('::').to_sym # e.g. A::B
+            mark = case aggregation_type
+            when :static
+              static_constant_marker(const_name, const_line)
+            when :static_root
+              static_constant_marker("::#{const_name}".to_sym, const_line)
+            else # :dynamic
+              dynamic_constant_marker(const_name, const_line)
             end
+            @markers << mark
+            aggregation_type = nil
+            const.clear
+            const_line = -1
           end
 
           case op
           when :getinstancevariable
             @markers << field_marker(bytecode[1])
           when :getconstant
-            unless aggregating
-              aggregating = true
-              if @last == [:putobject, Object]
-                const << @last
+            unless aggregation_type
+              aggregation_type = if @last.first == :getinlinecache
+                # this is a static constant reference (e.g. A::B).
+                :static
+              elsif @last == [:putobject, Object]
+                # also a static constant reference, on the root scope
+                # (e.g. ::A::B).
+                :static_root
+              else
+                # this is a dynamic constant reference. we don't understand
+                # what the reveiver is (e.g. f::A::B).
+                :dynamic
               end
             end
+            const_line = @line
             const << bytecode
           when :opt_send_without_block
             @markers << method_marker(bytecode[1][:mid])
@@ -121,12 +136,21 @@ module Mirrors
         vis.markers
       end
 
-      def class_marker(name)
+      def static_constant_marker(name, line = @line)
         Marker.new(
-          type: Mirrors::Marker::TYPE_CONSTANT_REFERENCE,
+          type: Mirrors::Marker::TYPE_STATIC_CONSTANT_REFERENCE,
           message: name,
           file: @absolute_path,
-          line: @line
+          line: line
+        )
+      end
+
+      def dynamic_constant_marker(name, line = @line)
+        Marker.new(
+          type: Mirrors::Marker::TYPE_DYNAMIC_CONSTANT_REFERENCE,
+          message: name,
+          file: @absolute_path,
+          line: line
         )
       end
 

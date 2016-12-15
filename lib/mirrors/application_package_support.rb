@@ -97,7 +97,7 @@ module Mirrors
     module_function :visible_from?
 
     def marker_in_violation?(marker)
-      return false unless marker.type == Mirrors::Marker::TYPE_CONSTANT_REFERENCE
+      return false unless marker.type == Mirrors::Marker::TYPE_STATIC_CONSTANT_REFERENCE
 
       this = Mirrors::Init.class_enclosing(marker.file.path, marker.line)
       return false unless this
