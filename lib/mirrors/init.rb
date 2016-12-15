@@ -4,6 +4,7 @@
 module Mirrors
   module Init
     @classdefs = {}
+    @classes_by_file = {}
   end
 end
 
@@ -14,23 +15,27 @@ Mirrors::Init::CLASS_DEFINITION_TRACEPOINT = begin
   # more code than is necessary before the +TracePoint+ is enabled.
   name = Module.instance_method(:inspect)
   stack = []
-  classdefs = Mirrors::Init.instance_variable_get(:@classdefs)
+  classdefs       = Mirrors::Init.instance_variable_get(:@classdefs)
+  classes_by_file = Mirrors::Init.instance_variable_get(:@classes_by_file)
   TracePoint.new(:class, :end) do |tp|
     if tp.event == :class
       klass = tp.self
       entry = if klass.singleton_class?
         :singleton
       else
-        [tp.path, tp.lineno, name.bind(klass).call]
+        [name.bind(klass).call, tp.path, tp.lineno, -1]
       end
       stack << entry
     else # :end
       entry = stack.pop
       unless entry == :singleton
-        key = entry[2]       # [file, start_line, class_name]
-        entry[2] = tp.lineno # [file, start_line, end_line]
-        classdefs[key] ||= []
-        classdefs[key] << entry
+        cname = entry[0]     # [class_name, file, start_line, -1]
+        file = entry[1]
+        entry[3] = tp.lineno # [class_name, file, start_line, end_line]
+        classdefs[cname] ||= []
+        classdefs[cname] << entry
+        classes_by_file[file] ||= []
+        classes_by_file[file] << entry
       end
     end
   end.tap(&:enable)
@@ -56,7 +61,7 @@ module Mirrors
         Mirrors.rebind(Module, klass, :inspect).call
       end
       if cds = @classdefs[name]
-        ret = cds.map(&:first)
+        ret = cds.map { |e| e[1] }
         ret.uniq!
         ret
       end
@@ -81,5 +86,21 @@ module Mirrors
       @classdefs[name]
     end
     module_function :definition_ranges
+
+    def class_enclosing(file, lineno)
+      return unless ranges = @classes_by_file[file]
+      best_line = -1
+      best_name = nil
+      ranges.each do |name, _, start_line, end_line|
+        if lineno >= start_line && lineno <= end_line && start_line > best_line
+          best_line = start_line
+          best_name = name
+        end
+      end
+      return unless best_name
+      const = best_name.split('::').inject(Object) { |m, c| m.const_get(c) }
+      Mirrors.reflect(const)
+    end
+    module_function :class_enclosing
   end
 end

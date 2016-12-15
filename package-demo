@@ -6,38 +6,17 @@ $LOAD_PATH.unshift(File.expand_path('../lib', __FILE__))
 require 'mirrors/init'
 require 'mirrors'
 
-# @package lol
-module Lol
-  module Bar
-    def lol
-      Foo::Bar.wtf
-    end
-  end
-end
+require_relative './demo-stuff'
 
-# @package bar
-module Foo
-  # @export Bar
-  module Bar
-    def wtf
-      Lol::Bar.lol
-    end
-  end
-end
-
-methods = []
-ObjectSpace.each_object(Module).each do |m|
-  cm = Mirrors.reflect(m)
-  methods.concat(cm.instance_methods)
-  methods.concat(cm.class_methods)
-end
-
-methods.each do |meth|
-  refs = meth
+Mirrors.files.each do |fm|
+  refs = fm
     .references
     .select { |ref| ref.type == Mirrors::Marker::TYPE_CONSTANT_REFERENCE }
 
   refs.each do |ref|
+    mycontext = Mirrors::Init.class_enclosing(ref.file.path, ref.line)
+    next unless mycontext
+
     const = begin
       msg = ref.message.to_s
       parts = msg.split('::')
@@ -45,14 +24,13 @@ methods.each do |meth|
         parts.shift
         Object
       else
-        meth.defining_class.reflectee
+        mycontext.reflectee
       end
       parts.inject(base) { |m, c| m.const_get(c) }
     rescue NameError
       next
     end
 
-    mycontext = meth.defining_class
     othercontext = Mirrors.reflect(const)
     next unless othercontext.is_a?(Mirrors::ClassMirror)
 

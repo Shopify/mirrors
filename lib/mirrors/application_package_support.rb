@@ -15,7 +15,7 @@ module Mirrors
     def package(class_mirror)
       class_mirror.nesting.each do |cm|
         next unless ranges = Mirrors::Init.definition_ranges(cm.name)
-        ranges.each do |file, startline, _|
+        ranges.each do |_, file, startline, _|
           if pkg = tag_for_block("@package", file, startline)
             return Package.new(pkg)
           end
@@ -55,7 +55,7 @@ module Mirrors
       ranges = Mirrors::Init.definition_ranges(class_mirror.name)
       return true unless ranges # true? false? what makes more sense?
 
-      ranges.each do |file, startline, _|
+      ranges.each do |_, file, startline, _|
         return false if tag_for_block("@package", file, startline)
         return false if tag_for_block("@export", file, startline)
       end

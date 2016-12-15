@@ -70,7 +70,7 @@ module Mirrors
     # @return [Array<FileMirror>]
     def files
       $LOADED_FEATURES
-        .select { |feat| feat =~ %r{^/} }
+        .select { |feat| feat =~ %r{^/.*\.rb$} }
         .map { |feat| Mirrors.reflect(FileMirror::File.new(feat)) }
     end
 

@@ -17,8 +17,8 @@ class InitTest < MiniTest::Test # 4
     act2 = Mirrors::Init.definition_ranges(Foo)
 
     exp = [
-      [__FILE__, 5, 6],
-      [__FILE__, 8, 8],
+      ['InitTest::Foo', __FILE__, 5, 6],
+      ['InitTest::Foo', __FILE__, 8, 8],
     ]
 
     assert_equal(exp, act1)
