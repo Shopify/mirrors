@@ -3,14 +3,11 @@ module Mirrors
     @memo_package = {}
     @memo_private = {}
 
+    ConflictingPackageTags = Class.new(StandardError)
+
     # Find the package for a class/module from a line in the docstring
     # before some location where the class is opened of the form
     # +# @package foo+.
-    #
-    # @todo continue recursing even when a match is found and conflict if
-    #   multiple packages are specified.
-    # @todo if conflicting packages are specified at different definition
-    #   sites, fail.
     #
     # @param [ClassMirror] class_mirror class to search for package of
     # @return [String,nil] package name, if any.
@@ -19,18 +16,25 @@ module Mirrors
         return hit == :cached_nil ? nil : hit
       end
 
-      found = nil
-      class_mirror.nesting.detect do |cm|
+      found = []
+      class_mirror.nesting.each do |cm|
         next unless ranges = Mirrors::Init.definition_ranges(cm.name)
-        ranges.detect do |_, file, startline, _|
+        ranges.each do |_, file, startline, _|
           if pkg = tag_for_block("@package", file, startline)
-            found = Package.new(pkg)
+            found << Package.new(pkg)
           end
         end
       end
 
-      @memo_package[class_mirror] = found ? found : :cached_nil
-      found
+      found.uniq!
+      if found.size > 1
+        raise ConflictingPackageTags,
+          "#{class_mirror.name} has conflicting packages: #{found.join(', ')}"
+      end
+      pkg = found.first
+
+      @memo_package[class_mirror] = pkg ? pkg : :cached_nil
+      pkg
     end
     module_function :package
 
@@ -52,8 +56,6 @@ module Mirrors
     #   Mirrors.reflect(Foo).private? # => false
     #   Mirrors.reflect(Foo::Bar).private? # => false
     #   Mirrors.reflect(Foo::Baz).private? # => true
-    #
-    # @todo verify the name specified in the export comment
     #
     # @param [ClassMirror] class_mirror class to test visibility of
     # @return [Boolean]

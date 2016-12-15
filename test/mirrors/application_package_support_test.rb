@@ -22,6 +22,17 @@ module Mirrors
       refute(ApplicationPackageSupport.private?(Mirrors.reflect(pub)))
     end
 
+    # @package a
+    class ABC; end
+    # @package b
+    class ABC; end
+
+    def test_conflicting_packages
+      assert_raises(ApplicationPackageSupport::ConflictingPackageTags) do
+        ApplicationPackageSupport.package(Mirrors.reflect(ABC))
+      end
+    end
+
     def test_visible_from?
       skip "TODO"
     end
