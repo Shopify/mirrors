@@ -15,5 +15,6 @@ require 'fixtures/class'
 require 'fixtures/object'
 require 'fixtures/method'
 require 'fixtures/field'
+require 'fixtures/application_package'
 
 require 'minitest/autorun'

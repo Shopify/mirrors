@@ -88,7 +88,7 @@ module Mirrors
     # @param [ClassMirror] class being accessed
     # @return [Boolean]
     def visible_from?(this, other)
-      priv = private?(this)
+      priv = private?(other)
       return true unless priv
       otherpkg = package(other)
       return true unless otherpkg
@@ -101,8 +101,8 @@ module Mirrors
       lines = File.readlines(file)
       lines[0...startline - 1].reverse.detect do |line|
         break unless line =~ /^\s*#/
-        if md = line.match(/# #{tag} (\S+)/)
-          return md[1]
+        if md = line.match(/# #{tag}(?: (\S+))?/)
+          return md[1] || :blank
         end
       end
       nil
