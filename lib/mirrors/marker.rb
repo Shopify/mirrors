@@ -22,9 +22,9 @@ module Mirrors
     # TYPE_PROBLEM = :'mirrors.marker.problem'
     # TYPE_TEXT    = :'mirrors.marker.text'
 
-    # the marker indicates a location in source where a class (named as
+    # the marker indicates a location in source where a constant (named as
     # {#message}) is referenced.
-    TYPE_CLASS_REFERENCE = :'mirrors.marker.text.class_reference'
+    TYPE_CONSTANT_REFERENCE = :'mirrors.marker.text.constant_reference'
     # the marker indicates a location in source where a method (named as
     # {#message}) is referenced.
     TYPE_METHOD_REFERENCE = :'mirrors.marker.text.method_reference'

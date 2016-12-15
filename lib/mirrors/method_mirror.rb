@@ -147,7 +147,7 @@ module Mirrors
     # @return [Array<Marker>,nil] list of all methods invoked in the method
     #   body.
     def references
-      @references ||= Mirrors::ISeq.references(@reflectee)
+      @references ||= Mirrors::ISeq.references(native_code)
     end
 
     # @see #calls_super?

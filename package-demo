@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+# Just run this file to get a demo
+
+$LOAD_PATH.unshift(File.expand_path('../lib', __FILE__))
+require 'mirrors/init'
+require 'mirrors'
+
+# @package lol
+module Lol
+  module Bar
+    def lol
+      Foo::Bar.wtf
+    end
+  end
+end
+
+# @package bar
+module Foo
+  # @export Bar
+  module Bar
+    def wtf
+      Lol::Bar.lol
+    end
+  end
+end
+
+methods = []
+ObjectSpace.each_object(Module).each do |m|
+  cm = Mirrors.reflect(m)
+  methods.concat(cm.instance_methods)
+  methods.concat(cm.class_methods)
+end
+
+methods.each do |meth|
+  refs = meth
+    .references
+    .select { |ref| ref.type == Mirrors::Marker::TYPE_CONSTANT_REFERENCE }
+
+  refs.each do |ref|
+    const = begin
+      msg = ref.message.to_s
+      parts = msg.split('::')
+      base = if parts.first.empty?
+        parts.shift
+        Object
+      else
+        meth.defining_class.reflectee
+      end
+      parts.inject(base) { |m, c| m.const_get(c) }
+    rescue NameError
+      next
+    end
+
+    mycontext = meth.defining_class
+    othercontext = Mirrors.reflect(const)
+    next unless othercontext.is_a?(Mirrors::ClassMirror)
+
+    unless Mirrors::ApplicationPackageSupport.visible_from?(mycontext, othercontext)
+      puts "\x1b[31mINVALID CROSS-PACKAGE ACCESS: \x1b[0m#{mycontext.name}\x1b[31m -> \x1b[0m#{othercontext.name}"
+    end
+  end
+end

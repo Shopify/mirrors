@@ -71,7 +71,7 @@ module Mirrors
     def visible_from?(this, other)
       priv = private?(this)
       return true unless priv
-      otherpkg = other.package(other)
+      otherpkg = package(other)
       return true unless otherpkg
       otherpkg == package(this)
     end

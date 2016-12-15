@@ -4,7 +4,7 @@ module Mirrors
   class MarkerTest < MiniTest::Test
     def setup
       @class_marker = Marker.new(
-        type: Marker::TYPE_CLASS_REFERENCE,
+        type: Marker::TYPE_CONSTANT_REFERENCE,
         message: 'Class',
         file: __FILE__,
         line: __LINE__
@@ -25,7 +25,7 @@ module Mirrors
     end
 
     def test_class_marker
-      assert_equal(Marker::TYPE_CLASS_REFERENCE, @class_marker.type)
+      assert_equal(Marker::TYPE_CONSTANT_REFERENCE, @class_marker.type)
       assert_equal('Class', @class_marker.message)
       assert_equal(this_file, @class_marker.file)
       assert_equal(10, @class_marker.line)
