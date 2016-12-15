@@ -84,6 +84,10 @@ module Mirrors
       assert_visible(ExportA::A, NotToplevel::A)
     end
 
+    def test_marker_in_violation?
+      skip
+    end
+
     private
 
     def assert_package(pkg, mod)

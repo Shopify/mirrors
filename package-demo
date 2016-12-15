@@ -1,41 +1,16 @@
 #!/usr/bin/env ruby
 
-# Just run this file to get a demo
-
 $LOAD_PATH.unshift(File.expand_path('../lib', __FILE__))
 require 'mirrors/init'
 require 'mirrors'
 
 require_relative './demo-stuff'
 
-Mirrors.files.each do |fm|
-  refs = fm
-    .references
-    .select { |ref| ref.type == Mirrors::Marker::TYPE_CONSTANT_REFERENCE }
+fm = Mirrors.files.detect { |f| f.path =~ /demo-stuff/ }
 
-  refs.each do |ref|
-    mycontext = Mirrors::Init.class_enclosing(ref.file.path, ref.line)
-    next unless mycontext
-
-    const = begin
-      msg = ref.message.to_s
-      parts = msg.split('::')
-      base = if parts.first.empty?
-        parts.shift
-        Object
-      else
-        mycontext.reflectee
-      end
-      parts.inject(base) { |m, c| m.const_get(c) }
-    rescue NameError
-      next
-    end
-
-    othercontext = Mirrors.reflect(const)
-    next unless othercontext.is_a?(Mirrors::ClassMirror)
-
-    unless Mirrors::ApplicationPackageSupport.visible_from?(mycontext, othercontext)
-      puts "\x1b[31mINVALID CROSS-PACKAGE ACCESS: \x1b[0m#{mycontext.name}\x1b[31m -> \x1b[0m#{othercontext.name}"
-    end
+fm.references.each do |marker|
+  if ret = Mirrors::ApplicationPackageSupport.marker_in_violation?(marker)
+    this, other = ret
+    puts "\x1b[31mINVALID CROSS-PACKAGE ACCESS: \x1b[0m#{this.name}\x1b[31m -> \x1b[0m#{other.name}"
   end
 end

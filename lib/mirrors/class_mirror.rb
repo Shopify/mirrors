@@ -70,7 +70,7 @@ module Mirrors
     # include a colon (::) separated constant path.
     #
     # @return [ClassMirror, nil] the requested constant, or nil
-    def constant(str)
+    def constant33(str)
       path = str.to_s.split('::')
       c = path[0..-2].inject(@reflectee) do |klass, s|
         Mirrors.rebind(Module, klass, :const_get).call(s)
@@ -82,6 +82,30 @@ module Mirrors
       field_mirror(owner, path.last)
     rescue NameError
       nil
+    end
+
+    def constant(str)
+      parts = str.split('::')
+      base = if parts.first.empty?
+        parts.shift
+        Object
+      else
+        @reflectee
+      end
+
+      x = begin
+        parts[0..-2].inject(base) { |m, c| m.const_get(c) }
+      rescue NameError
+        nil
+      end
+
+      owner = x || @reflectee
+      begin
+        owner.const_get(parts.last)
+        field_mirror(owner, parts.last)
+      rescue NameError
+        nil
+      end
     end
 
     # All constants, class vars, and class instance vars.

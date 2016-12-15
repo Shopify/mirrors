@@ -96,6 +96,26 @@ module Mirrors
     end
     module_function :visible_from?
 
+    def marker_in_violation?(marker)
+      return false unless marker.type == Mirrors::Marker::TYPE_CONSTANT_REFERENCE
+
+      this = Mirrors::Init.class_enclosing(marker.file.path, marker.line)
+      return false unless this
+
+      other_const = this.constant(marker.message.to_s)
+      return false unless other_const.is_a?(Mirrors::ConstantMirror)
+
+      other = other_const.value
+      return false unless other.is_a?(Mirrors::ClassMirror)
+
+      unless Mirrors::ApplicationPackageSupport.visible_from?(this, other)
+        return this, other
+      end
+
+      false
+    end
+    module_function :marker_in_violation?
+
     # This could obviously be done way less stupidly.
     def self.tag_for_block(tag, file, startline)
       lines = File.readlines(file)
