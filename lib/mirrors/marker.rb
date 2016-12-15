@@ -19,7 +19,7 @@ module Mirrors
 
     # for later use
     # TYPE_TASK    = :'mirrors.marker.task'
-    # TYPE_PROBLEM = :'mirrors.marker.problem'
+    TYPE_PROBLEM = :'mirrors.marker.problem'
     # TYPE_TEXT    = :'mirrors.marker.text'
 
     # the marker indicates a location in source where a constant (named as

@@ -6,11 +6,8 @@ require 'mirrors'
 
 require_relative './demo-stuff'
 
-fm = Mirrors.files.detect { |f| f.path =~ /demo-stuff/ }
-
-fm.references.each do |marker|
-  if ret = Mirrors::ApplicationPackageSupport.marker_in_violation?(marker)
-    this, other = ret
-    puts "\x1b[31mINVALID CROSS-PACKAGE ACCESS: \x1b[0m#{this.name}\x1b[31m -> \x1b[0m#{other.name}"
+if marks = Mirrors::Checks::PackageViolations.check
+  marks.each do |mark|
+    puts mark.inspect
   end
 end
