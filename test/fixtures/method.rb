@@ -50,3 +50,24 @@ class SuperMethodSpecFixture < MethodSpecFixture
   def not_inherited
   end
 end
+
+class HelperModule < Module
+  def initialize(something)
+    @something = something
+  end
+
+  def to_s
+    "Helper for #{@something}"
+  end
+end
+
+DYNAMIC_INCLUDE = HelperModule.new("fixture")
+
+class ObjectIncludeFixture
+  include DYNAMIC_INCLUDE
+end
+
+DYNAMIC_INCLUDE.class_eval do
+  def method_from_dynamic_include
+  end
+end
