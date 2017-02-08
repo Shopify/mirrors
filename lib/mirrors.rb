@@ -193,7 +193,10 @@ module Mirrors
 
     def reflect_method(obj)
       mirror = MethodMirror.new(obj)
-      mirror.defining_class.intern_method_mirror(mirror)
+      if mirror.defining_class.respond_to?(:intern_method_mirror)
+        mirror = mirror.defining_class.intern_method_mirror(mirror)
+      end
+      mirror
     end
 
     def reflect_class(obj)

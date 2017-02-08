@@ -114,6 +114,12 @@ module Mirrors
       assert_equal(:private, m.visibility)
     end
 
+    def test_method_included_from_instance
+      method_mirror = Mirrors.reflect(ObjectIncludeFixture.new.method(:method_from_dynamic_include))
+      assert(method_mirror.public?)
+      assert_equal(method_mirror.defining_class.reflectee, DYNAMIC_INCLUDE)
+    end
+
     private
 
     def method_b(a, b = 1, bb = 2, *args, &block)
