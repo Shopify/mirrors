@@ -15,3 +15,4 @@ require 'fixtures/method'
 require 'fixtures/field'
 
 require 'minitest/autorun'
+require 'byebug'

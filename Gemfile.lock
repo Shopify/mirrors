@@ -36,7 +36,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  byebug (~> 9.0.6)
+  byebug
   minitest (~> 5.0)
   mirrors!
   rubocop (~> 0.46)
