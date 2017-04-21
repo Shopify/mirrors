@@ -6,6 +6,8 @@ SimpleCov.start do
   add_filter 'test'
 end
 
+require 'mirrors/init'
+
 require 'mirrors'
 
 require 'fixtures/reflect'
@@ -13,6 +15,7 @@ require 'fixtures/class'
 require 'fixtures/object'
 require 'fixtures/method'
 require 'fixtures/field'
+require 'fixtures/application_package'
 
 require 'minitest/autorun'
 require 'byebug'

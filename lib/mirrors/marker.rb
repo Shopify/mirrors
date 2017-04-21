@@ -19,12 +19,16 @@ module Mirrors
 
     # for later use
     # TYPE_TASK    = :'mirrors.marker.task'
-    # TYPE_PROBLEM = :'mirrors.marker.problem'
+    TYPE_PROBLEM = :'mirrors.marker.problem'
     # TYPE_TEXT    = :'mirrors.marker.text'
 
-    # the marker indicates a location in source where a class (named as
+    # the marker indicates a location in source where a constant (named as
     # {#message}) is referenced.
-    TYPE_CLASS_REFERENCE = :'mirrors.marker.text.class_reference'
+    TYPE_STATIC_CONSTANT_REFERENCE = :'mirrors.marker.text.static_constant_reference'
+    # the marker indicates a location in source where a constant (named as
+    # {#message}) is referenced, but with an ambiguous receiver (e.g. +A::B+ in
+    # +f::A::B+)
+    TYPE_DYNAMIC_CONSTANT_REFERENCE = :'mirrors.marker.text.dynamic_constant_reference'
     # the marker indicates a location in source where a method (named as
     # {#message}) is referenced.
     TYPE_METHOD_REFERENCE = :'mirrors.marker.text.method_reference'

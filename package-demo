@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift(File.expand_path('../lib', __FILE__))
+require 'mirrors/init'
+require 'mirrors'
+
+require_relative './demo-stuff'
+
+if marks = Mirrors::Checks::PackageViolations.check
+  marks.each do |mark|
+    puts mark.inspect
+  end
+end

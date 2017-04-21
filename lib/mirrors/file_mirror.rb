@@ -1,4 +1,4 @@
-require 'mirrors/iseq/references_visitor'
+require 'mirrors/iseq'
 
 module Mirrors
   # Represents a file on disk, normally corresponding to an entry in
@@ -36,9 +36,7 @@ module Mirrors
     #   including method bodies.
     def references
       @references ||= begin
-        visitor = Mirrors::ISeq::ReferencesVisitor.new
-        visitor.call(native_code)
-        visitor.markers
+        ISeq.references(native_code)
       end
     end
 

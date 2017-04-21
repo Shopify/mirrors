@@ -11,6 +11,22 @@ module Mirrors
         foo { |bar| bar.baz(3) } # send with block. two methods.
         foo2(&:bar2) # send with block. two methods.
       end
+
+      def const(f)
+        A::B
+        ::A::B
+        f::A::B
+      end
+    end
+
+    def test_constant_nesting
+      actual = Mirrors.reflect(Victim).instance_method(:const).references
+      expected = [
+        Marker.new(type: Marker::TYPE_STATIC_CONSTANT_REFERENCE, message: :'A::B', file: __FILE__, line: 16),
+        Marker.new(type: Marker::TYPE_STATIC_CONSTANT_REFERENCE, message: :'::A::B', file: __FILE__, line: 17),
+        Marker.new(type: Marker::TYPE_DYNAMIC_CONSTANT_REFERENCE, message: :'A::B', file: __FILE__, line: 18),
+      ]
+      assert_equal(expected, actual)
     end
 
     def test_victim_class
@@ -18,7 +34,7 @@ module Mirrors
       expected = [
         Marker.new(type: Marker::TYPE_FIELD_REFERENCE, message: :@ivar, file: __FILE__, line: 8),
         Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :to_s, file: __FILE__, line: 9),
-        Marker.new(type: Marker::TYPE_CLASS_REFERENCE, message: :Kernel, file: __FILE__, line: 10),
+        Marker.new(type: Marker::TYPE_STATIC_CONSTANT_REFERENCE, message: :Kernel, file: __FILE__, line: 10),
         Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :exit, file: __FILE__, line: 10),
         Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :foo, file: __FILE__, line: 11),
         Marker.new(type: Marker::TYPE_METHOD_REFERENCE, message: :baz, file: __FILE__, line: 11),

@@ -7,7 +7,9 @@ require 'mirrors/field_mirror'
 require 'mirrors/file_mirror'
 require 'mirrors/method_mirror'
 require 'mirrors/package_mirror'
+require 'mirrors/application_package_support'
 require 'mirrors/package_inference'
+require 'mirrors/checks'
 require 'mirrors/iseq'
 
 # Mirrors provides a parallel-world reflection API for ruby.
@@ -69,7 +71,7 @@ module Mirrors
     # @return [Array<FileMirror>]
     def files
       $LOADED_FEATURES
-        .select { |feat| feat =~ %r{^/} }
+        .select { |feat| feat =~ %r{^/.*\.rb$} }
         .map { |feat| Mirrors.reflect(FileMirror::File.new(feat)) }
     end
 
