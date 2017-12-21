@@ -30,7 +30,7 @@ GEM
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.0)
     unicode-display_width (1.1.1)
-    yard (0.9.5)
+    yard (0.9.12)
 
 PLATFORMS
   ruby
@@ -41,7 +41,7 @@ DEPENDENCIES
   mirrors!
   rubocop (~> 0.46)
   simplecov (~> 0.12)
-  yard (~> 0.9)
+  yard (~> 0.9.11)
 
 BUNDLED WITH
-   1.13.6
+   1.16.0

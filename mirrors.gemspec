@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'minitest',  '~> 5.0'
   s.add_development_dependency 'byebug',    '~> 9.0.6'
-  s.add_development_dependency 'yard',      '~> 0.9'
+  s.add_development_dependency 'yard',      '~> 0.9.11'
   s.add_development_dependency 'rubocop',   '~> 0.46'
   s.add_development_dependency 'simplecov', '~> 0.12'
 
