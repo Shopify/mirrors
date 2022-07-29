@@ -10,7 +10,7 @@ GEM
     ast (2.3.0)
     byebug (9.0.6)
     docile (1.1.5)
-    json (1.8.3)
+    json (2.6.2)
     method_source (0.8.2)
     minitest (5.9.1)
     parallel (1.12.1)
